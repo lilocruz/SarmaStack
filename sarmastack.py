@@ -48,7 +48,7 @@ def suggest_ami(args):
     )
     ami_ids = [image['ImageId'] for image in response['Images']]
     ami_names = [image['Name'] for image in response['Images']]
-    
+
     print("Suggested AMI image IDs:")
     for ami_id, ami_name in zip(ami_ids, ami_names):
         print(f"AMI ID: {ami_id}, OS Name: {ami_name}")
@@ -56,7 +56,7 @@ def suggest_ami(args):
 def provision(args):
     with open(args.file, 'r') as f:
         spec = yaml.safe_load(f)
-    
+
     for resource in spec['resources']:
         resource_type = resource['type']
         if resource_type == 'instance':
@@ -81,7 +81,7 @@ def main():
 
     # Create a parser for the "create-bucket" command
     create_bucket_parser = subparsers.add_parser('create-bucket', help='Create a bucket')
-    create_bucket_parser.add_argument('-bn', '--bucket_name', help='Name of the bucket')
+    create_bucket_parser.add_argument('-id', '--bucket_name', help='Name of the bucket')
 
     # Create a parser for the "suggest-ami" command
     suggest_ami_parser = subparsers.add_parser('suggest-ami', help='Suggest AMI image IDs')
