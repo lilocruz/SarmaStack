@@ -1,6 +1,5 @@
-instances:
-  - instance_name: instance20
-    image_id: ami-053b0d53c279acc90
-    instance_type: t2.micro
-
-
+buckets:
+  - bucket_name: my-bucket-1
+    region: us-east-1
+  - bucket_name: my-bucket-2
+    region: us-east-1
