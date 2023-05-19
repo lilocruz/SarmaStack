@@ -8,6 +8,7 @@ import argparse
 import boto3
 import botocore.exceptions
 import yaml
+import json
 
 def create_instance(args):
     if args.get('file'):
@@ -120,6 +121,42 @@ def list_buckets(args):
     except Exception as e:
         print(f"Error occurred while listing buckets: {str(e)}")
 
+def list_iam_users(args):
+    iam_client = boto3.client('iam')
+
+    try:
+        response = iam_client.list_users()
+        users = response['Users']
+
+        if users:
+            print("List of IAM Users:")
+            for user in users:
+                user_name = user['UserName']
+                print(user_name)
+        else:
+            print("No IAM users found.")
+    except Exception as e:
+        print(f"Error occurred while listing IAM users: {str(e)}")
+
+def list_instances(args):
+    ec2_client = boto3.client('ec2')
+
+    try:
+        response = ec2_client.describe_instances()
+        reservations = response['Reservations']
+        instances = [instance for reservation in reservations for instance in reservation['Instances']]
+        
+        if instances:
+            print("List of instances:")
+            for instance in instances:
+                instance_id = instance['InstanceId']
+                instance_state = instance['State']['Name']
+                print(f"- {instance_id} (Phase: {instance_state})")
+        else:
+            print("No instances found.")
+    except Exception as e:
+        print(f"Error occurred while listing instances: {str(e)}")
+
 def get_location_constraint(region):
     # AWS region to location constraint mapping
     region_mapping = {
@@ -151,17 +188,41 @@ def delete_bucket(args):
 def create_iam_user(args):
     iam_client = boto3.client('iam')
     response = iam_client.create_user(
-        UserName=args['name']
+        UserName=args['user_name']
     )
-    print(f"Created IAM user: {args['name']}")
+    print(f"Created IAM user: {args['user_name']}")
 
-def create_iam_role(args):
+def delete_iam_user(args):
     iam_client = boto3.client('iam')
-    response = iam_client.create_role(
-        RoleName=args['role_name'],
-        AssumeRolePolicyDocument=args['assume_role_policy']
-    )
-    print(f"Created IAM role: {args['role_name']}")
+    user_name = args.get('user_name')
+
+    if user_name:
+        try:
+            response = iam_client.delete_user(UserName=user_name)
+            print(f"Deleted IAM user: {user_name}")
+        except Exception as e:
+            print(f"Error occurred while deleting IAM user: {str(e)}")
+    else:
+        print("Please provide the 'user_name' argument.")
+
+
+def create_iam_role(resource):
+    iam_client = boto3.client('iam')
+
+    role_name = resource.get('role_name')
+    assume_role_policy = resource.get('assume_role_policy')
+
+    if role_name and assume_role_policy:
+        try:
+            response = iam_client.create_role(
+                RoleName=role_name,
+                AssumeRolePolicyDocument=json.dumps(assume_role_policy)
+            )
+            print(f"Created IAM role {role_name}")
+        except Exception as e:
+            print(f"Error occurred while creating IAM role {role_name}: {str(e)}")
+    else:
+        print("Please provide both 'role_name' and 'assume_role_policy' arguments.")
 
 def create_iam_policy(args):
     iam_client = boto3.client('iam')
@@ -207,6 +268,19 @@ def provision(args):
             create_bucket(bucket)
     else:
         print("No bucket specifications found in the YAML file.")
+    
+    if 'resources' in data:
+        resources = data['resources']
+        for resource in resources:
+            resource_type = resource.get('type')
+            if resource_type == 'iam_user':
+                create_iam_user(resource)
+            elif resource_type == 'iam_role':
+                create_iam_role(resource)
+            elif resource_type == 'iam_policy':
+                create_iam_policy(resource)
+            else:
+                print(f"Unsupported resource type: {resource_type}")
 
 def main():
     # Create the main argument parser
@@ -218,6 +292,7 @@ def main():
     # Create a parser for the "create-iam-user" command
     create_iam_user_parser = subparsers.add_parser('create-iam-user', help='Create an IAM user')
     create_iam_user_parser.add_argument('-un', '--user_name', help='Name of the IAM user')
+
 
     # Create a parser for the "create-iam-role" command
     create_iam_role_parser = subparsers.add_parser('create-iam-role', help='Create an IAM role')
@@ -246,14 +321,25 @@ def main():
     delete_instance_parser.add_argument('-f', '--file', help='Path to the YAML file')
 
 
+    # Create a parser for the "delete-iam-user" command
+    delete_iam_user_parser = subparsers.add_parser('delete-iam-user', help='Delete an IAM user')
+    delete_iam_user_parser.add_argument('-un', '--user_name', help='Username of the IAM user')
+
+
     # Create a parser for the "create-bucket" command
     create_bucket_parser = subparsers.add_parser('create-bucket', help='Create a bucket')
     create_bucket_parser.add_argument('-bn', '--bucket_name', help='Name of the bucket')
     create_bucket_parser.add_argument('-rg', '--region', help='AWS region')
     create_bucket_parser.add_argument('-f', '--file', help='Path to the YAML file')
 
-    # Create a parser for the "list-bucket" commands
+    # Create a parser for the "list-bucket" command
     list_bucke_parser = subparsers.add_parser('list-bucket', help='List bucket')
+
+    # Create a parser for the "list-users" command
+    list_users_parser = subparsers.add_parser('list-users', help='List IAM users')
+    
+    # Create a parser for the "list-instances" command
+    list_instances_parser = subparsers.add_parser('list-instances', help='List Instances')
 
     # Create a parser for the "delete-bucket" command
     delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a bucket')
@@ -282,9 +368,15 @@ def main():
     elif args['command'] == 'create-bucket':
         create_bucket(args)
     elif args['command'] == 'list-bucket':
-        list_buckets(list_bucke_parser)
+        list_buckets(args)
+    elif args['command'] == 'list-users':
+        list_iam_users(args)
+    elif args['command'] == 'list-instances':
+        list_instances(args)
     elif args['command'] == 'delete-bucket':
         delete_bucket(args)
+    elif args['command'] == 'delete-iam-user':
+        delete_iam_user(args)
     elif args['command'] == 'create-iam-user':
         create_iam_user(args)
     elif args['command'] == 'create-iam-role':

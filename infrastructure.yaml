@@ -1,5 +1,14 @@
+instances:
+  - instance_name: acl-lab
+    instance_type: t2.micro
+    image_id: ami-053b0d53c279acc90
+
 buckets:
-  - bucket_name: papi-bucket
+  - bucket_name: kiki-bucket
     region: us-east-1
-  - bucket_name: mami-bucket
-    region: us-east-1
+
+resources:
+  - type: iam_user
+    user_name: lilo-user
+  - type: iam_role
+    role_name: lilo-role
