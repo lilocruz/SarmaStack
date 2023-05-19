@@ -1,15 +1,7 @@
 instances:
-  - name: instance1
+  - name: instance10
     image_id: ami-053b0d53c279acc90
     instance_type: t2.micro
     count: 1
-  - name: instance2
-    image_id: ami-053b0d53c279acc90
-    instance_type: t2.large
-    count: 1
-buckets:
-  - name: my-bucket1
-    region: us-west-2
-  - name: my-bucket2
-    region: eu-west-1
+
 

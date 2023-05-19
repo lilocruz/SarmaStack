@@ -8,35 +8,38 @@ import argparse
 import boto3
 import yaml
 
-def create_instance(instance):
-    instance_name = instance['name']
-    image_id = instance['image_id']
-    instance_type = instance['instance_type']
-    count = instance['count']
+def create_instance(args):
+    if args.get('file'):
+        with open(args['file'], 'r') as f:
+            data = yaml.save_load(f)
+            instances = data.get('instances')
+            if instances:
+                for instance in instances:
+                    create_instance(instance)
+            else:
+                print("No instances specifications found in the YAML file.")
 
-    ec2_client = boto3.client('ec2')
-    response = ec2_client.run_instances(
-        ImageId=instance['image_id'],
-        InstanceType=instance['instance_type'],
-        MinCount=1,
-        MaxCount=1,
-        TagSpecifications=[
-            {
-                'ResourceType': 'instance',
-                'Tags': [
-                    {
-                        'Key': 'Name',
-                        'Value': instance['name']
-                    },
-                ]
-            },
-        ]
-    )
-    # instance_id = response['Instances'][0]['InstanceId']
-    # print(f"Created EC2 instance with ID: {instance_id}")
-    instances = response['Instances']
-    instance_ids = [instance['InstanceId'] for instance in instances]
-    print(f"Created instances {instance_ids} with name {instance_name}")
+    else:
+        ec2_client = boto3.client('ec2')
+        instance_name = args.get('instance_name') or 'name'
+        response = ec2_client.run_instances(
+            ImageId=args['image_id'],
+            InstanceType=args['instance_type'],
+            MinCount=1,
+            MaxCount=1,
+            TagSpecifications=[
+                {
+                    'ResourceType': 'instance',
+                    'Tags': [
+                        {
+                            'Key': 'Name',
+                            'Value': instance_name
+                        },
+                    ]
+                },
+            ]
+        )
+        print(f"Created instance with id {args['image_id']} and name: {args[instance_name]}")
 
 def stop_instance(args):
     ec2_client = boto3.client('ec2')
@@ -46,38 +49,45 @@ def stop_instance(args):
     print(f"Stopped EC2 instance with ID: {args['instance_id']}")
 
 def delete_instance(args):
-    ec2_client = boto3.client('ec2')
-    response = ec2_client.terminate_instances(
-        InstanceIds=[args['instance_id']]
-    )
-    print(f"Deleted EC2 instance with ID: {args['instance_id']}")
+    if args.get('file'):
+        with open(args['file'], 'r') as f:
+            data = yaml.save_load(f)
+            instances = data.get('instances')
+            if instances:
+                instance_ids = [instance['instance_id'] for instance in instances]
+                delete_instance({'instance_ids': instance_ids})
+            else:
+                print("No instance specifications found in the YAML file.")
+    
+    else:
+        # Delete the instances using the CLI arguments
+        ec2_client = boto3.client('ec2')
+        instance_ids = args.get('instance_ids')
+        if instance_ids:
+            response = ec2_client.terminate_instances(InstanceIds=instance_ids)
+            print(f"Deleted instances: {args['instance_ids']}")
 
-def create_bucket(bucket):
-    bucket_name = bucket['name']
-    region = bucket['region']
-
+def create_bucket(args):
     s3_client = boto3.client('s3')
     response = s3_client.create_bucket(
-        Bucket=bucket_name,
+        Bucket=args['name'],
         CreateBucketConfiguration={
-            'LocationConstraint': region
+            'LocationConstraint': args['region']
         }
     )
-
-    # Print the created bucket name
-    print(f"Created bucket {bucket_name}")
+    print(f"Created bucket: args{['bucket_name']}")
 
 def delete_bucket(args):
     s3_client = boto3.client('s3')
-    s3_client.delete_bucket(Bucket=args['bucket_name'])
-    print(f"Deleted S3 bucket: {args['bucket_name']}")
+    s3_client.delete_bucket(Bucket=args['name'])
+    print(f"Deleted S3 bucket: {args['name']}")
 
 def create_iam_user(args):
     iam_client = boto3.client('iam')
     response = iam_client.create_user(
-        UserName=args['user_name']
+        UserName=args['name']
     )
-    print(f"Created IAM user: {args['user_name']}")
+    print(f"Created IAM user: {args['name']}")
 
 def create_iam_role(args):
     iam_client = boto3.client('iam')
@@ -124,6 +134,13 @@ def provision(args):
             create_instance(instance)
     else:
         print("No instance specifications found in the YAML file.")
+    
+    if 'buckets' in data:
+        buckets = data['buckets']
+        for bucket in buckets:
+            create_bucket(bucket)
+    else:
+        print("No bucket specifications found in the YAML file.")
 
 def main():
     # Create the main argument parser
@@ -148,9 +165,10 @@ def main():
 
     # Create a parser for the "create-instance" command
     create_instance_parser = subparsers.add_parser('create-instance', help='Create an instance')
-    create_instance_parser.add_argument('-in', '--instance_name', help='Name of the instance')
-    create_instance_parser.add_argument('-it', '--instance-type', help='Type of the instance')
-    create_instance_parser.add_argument('-id', '--image-id', help='ID of the AMI image')
+    create_instance_parser.add_argument('-in', '--instance-name', required=True, help='Name of the instance')
+    create_instance_parser.add_argument('-it', '--instance-type', required=True, help='Type of the instance')
+    create_instance_parser.add_argument('-id', '--image-id', required=True, help='ID of the AMI image')
+    create_instance_parser.add_argument('-f', '--file', help='Path to the YAML file')
 
     # Create a parser for the "stop-instance" command
     stop_instance_parser = subparsers.add_parser('stop-instance', help='Stop an instance')
@@ -158,7 +176,9 @@ def main():
 
     # Create a parser for the "delete-instance" command
     delete_instance_parser = subparsers.add_parser('delete-instance', help='Delete an instance')
-    delete_instance_parser.add_argument('-id', '--instance_id', help='ID of the instance')
+    delete_instance_parser.add_argument('-id', '--instance_ids', nargs='+', help='ID of the instances to delete')
+    delete_instance_parser.add_argument('-f', '--file', help='Path to the YAML file')
+
 
     # Create a parser for the "create-bucket" command
     create_bucket_parser = subparsers.add_parser('create-bucket', help='Create a bucket')
