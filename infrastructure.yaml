@@ -1,5 +1,5 @@
 buckets:
-  - bucket_name: my-bucket-1
+  - bucket_name: papi-bucket
     region: us-east-1
-  - bucket_name: my-bucket-2
+  - bucket_name: mami-bucket
     region: us-east-1
