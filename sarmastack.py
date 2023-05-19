@@ -50,6 +50,11 @@ def create_bucket(args):
     s3_client.create_bucket(Bucket=args['bucket_name'])
     print(f"Created S3 bucket: {args['bucket_name']}")
 
+def delete_bucket(args):
+    s3_client = boto3.client('s3')
+    s3_client.delete_bucket(Bucket=args['bucket_name'])
+    print(f"Deleted S3 bucket: {args['bucket_name']}")
+
 def suggest_ami(args):
     ec2_client = boto3.client('ec2')
     response = ec2_client.describe_images(
@@ -89,7 +94,7 @@ def main():
 
     # Create a parser for the "create-instance" command
     create_instance_parser = subparsers.add_parser('create-instance', help='Create an instance')
-    create_instance_parser.add_argument('-in','--instance_name', help='Name of the instance')
+    create_instance_parser.add_argument('-in', '--instance_name', help='Name of the instance')
     create_instance_parser.add_argument('-it', '--instance-type', help='Type of the instance')
     create_instance_parser.add_argument('-id', '--image-id', help='ID of the AMI image')
 
@@ -105,10 +110,14 @@ def main():
     create_bucket_parser = subparsers.add_parser('create-bucket', help='Create a bucket')
     create_bucket_parser.add_argument('-bn', '--bucket_name', help='Name of the bucket')
 
+    # Create a parser for the "delete-bucket" command
+    delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a bucket')
+    delete_bucket_parser.add_argument('-bn', '--bucket_name', help='Name of the bucket')
+
     # Create a parser for the "suggest-ami" command
     suggest_ami_parser = subparsers.add_parser('suggest-ami', help='Suggest AMI image IDs')
-    suggest_ami_parser.add_argument('--filter-name', help='Name of the filter')
-    suggest_ami_parser.add_argument('--filter-values', nargs='+', help='Values for the filter')
+    suggest_ami_parser.add_argument('-fn', '--filter-name', help='Name of the filter')
+    suggest_ami_parser.add_argument('-fv', '--filter-values', nargs='+', help='Values for the filter')
 
     # Create a parser for the "provision" command
     provision_parser = subparsers.add_parser('provision', help='Provision infrastructure from YAML file')
@@ -126,6 +135,8 @@ def main():
         delete_instance(args)
     elif args['command'] == 'create-bucket':
         create_bucket(args)
+    elif args['command'] == 'delete-bucket':
+        delete_bucket(args)
     elif args['command'] == 'suggest-ami':
         suggest_ami(args)
     elif args['command'] == 'provision':
@@ -135,3 +146,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
