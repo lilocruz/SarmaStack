@@ -12,8 +12,8 @@ import yaml
 def create_instance(args):
     ec2_client = boto3.client('ec2')
     response = ec2_client.run_instances(
-        ImageId=args.image_id,
-        InstanceType=args.instance_type,
+        ImageId=args['image_id'],
+        InstanceType=args['instance_type'],
         MinCount=1,
         MaxCount=1,
         TagSpecifications=[
@@ -22,7 +22,7 @@ def create_instance(args):
                 'Tags': [
                     {
                         'Key': 'Name',
-                        'Value': args.instance_name
+                        'Value': args['instance_name']
                     },
                 ]
             },
@@ -33,16 +33,16 @@ def create_instance(args):
 
 def create_bucket(args):
     s3_client = boto3.client('s3')
-    s3_client.create_bucket(Bucket=args.bucket_name)
-    print(f"Created S3 bucket: {args.bucket_name}")
+    s3_client.create_bucket(Bucket=args['bucket_name'])
+    print(f"Created S3 bucket: {args['bucket_name']}")
 
 def suggest_ami(args):
     ec2_client = boto3.client('ec2')
     response = ec2_client.describe_images(
         Filters=[
             {
-                'Name': args.filter_name,
-                'Values': args.filter_values
+                'Name': args['filter_name'],
+                'Values': args['filter_values']
             }
         ]
     )
@@ -54,7 +54,7 @@ def suggest_ami(args):
         print(f"AMI ID: {ami_id}, OS Name: {ami_name}")
 
 def provision(args):
-    with open(args.file, 'r') as f:
+    with open(args['file'], 'r') as f:
         spec = yaml.safe_load(f)
 
     for resource in spec['resources']:
@@ -81,7 +81,7 @@ def main():
 
     # Create a parser for the "create-bucket" command
     create_bucket_parser = subparsers.add_parser('create-bucket', help='Create a bucket')
-    create_bucket_parser.add_argument('-id', '--bucket_name', help='Name of the bucket')
+    create_bucket_parser.add_argument('-bn', '--bucket_name', help='Name of the bucket')
 
     # Create a parser for the "suggest-ami" command
     suggest_ami_parser = subparsers.add_parser('suggest-ami', help='Suggest AMI image IDs')
@@ -93,16 +93,16 @@ def main():
     provision_parser.add_argument('-f', '--file', help='Path to the YAML file')
 
     # Parse the command-line arguments
-    args = parser.parse_args()
+    args = vars(parser.parse_args())
 
     # Handle the commands
-    if args.command == 'create-instance':
+    if args['command'] == 'create-instance':
         create_instance(args)
-    elif args.command == 'create-bucket':
+    elif args['command'] == 'create-bucket':
         create_bucket(args)
-    elif args.command == 'suggest-ami':
+    elif args['command'] == 'suggest-ami':
         suggest_ami(args)
-    elif args.command == 'provision':
+    elif args['command'] == 'provision':
         provision(args)
     else:
         parser.print_help()
