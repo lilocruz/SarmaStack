@@ -135,8 +135,17 @@ def get_location_constraint(region):
 
 def delete_bucket(args):
     s3_client = boto3.client('s3')
-    s3_client.delete_bucket(Bucket=args['name'])
-    print(f"Deleted S3 bucket: {args['name']}")
+
+    bucket_name = args.get('bucket_name')
+
+    if bucket_name:
+        try:
+            s3_client.delete_bucket(Bucket=bucket_name)
+            print(f"Deleted bucket: {bucket_name}")
+        except Exception as e:
+            print(f"Error occurred while deleting the bucket: {str(e)}")
+    else:
+        print("Please provide the 'bucket_name' argument.")
 
 def create_iam_user(args):
     iam_client = boto3.client('iam')
