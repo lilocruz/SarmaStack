@@ -136,16 +136,17 @@ def get_location_constraint(region):
 def delete_bucket(args):
     s3_client = boto3.client('s3')
 
-    bucket_name = args.get('bucket_name')
+    bucket_names = args.get('bucket_name')
 
-    if bucket_name:
-        try:
-            s3_client.delete_bucket(Bucket=bucket_name)
-            print(f"Deleted bucket: {bucket_name}")
-        except Exception as e:
-            print(f"Error occurred while deleting the bucket: {str(e)}")
+    if bucket_names:
+        for bucket_name in bucket_names:
+            try:
+                s3_client.delete_bucket(Bucket=bucket_name)
+                print(f"Deleted bucket {bucket_name}")
+            except Exception as e:
+                print(f"Error occurred while deleting bucket {bucket_name}: {str(e)}")
     else:
-        print("Please provide the 'bucket_name' argument.")
+        print("Please provide the 'bucket_names' argument with a list of bucket names to delete.")
 
 def create_iam_user(args):
     iam_client = boto3.client('iam')
@@ -256,7 +257,8 @@ def main():
 
     # Create a parser for the "delete-bucket" command
     delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a bucket')
-    delete_bucket_parser.add_argument('-bn', '--bucket_name', help='Name of the bucket')
+    delete_bucket_parser.add_argument('-bn', '--bucket_name', nargs='+', help='Name of the bucket')
+
 
     # Create a parser for the "suggest-ami" command
     suggest_ami_parser = subparsers.add_parser('suggest-ami', help='Suggest AMI image IDs')
