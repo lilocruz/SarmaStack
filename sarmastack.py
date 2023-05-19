@@ -128,7 +128,7 @@ def main():
     # Create a parser for the "create-iam-policy" command
     create_iam_policy_parser = subparsers.add_parser('create-iam-poliy', help='Create an IAM policy')
     create_iam_policy_parser.add_argument('-pn', '--policy_name', help='Name of the IAM policy')
-    create_iam_policy_parser.add_argument('-pd', '--policy_document', help='Path to the policy document'
+    create_iam_policy_parser.add_argument('-pd', '--policy_document', help='Path to the policy document')
 
     # Create a parser for the "create-instance" command
     create_instance_parser = subparsers.add_parser('create-instance', help='Create an instance')
