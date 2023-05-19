@@ -54,6 +54,31 @@ def delete_bucket(args):
     s3_client.delete_bucket(Bucket=args['bucket_name'])
     print(f"Deleted S3 bucket: {args['bucket_name']}")
 
+def create_iam_user(args):
+    iam_client = boto3.client('iam')
+    response = iam_client.create_user(
+        UserName=args['user_name']
+    )
+    print(f"Created IAM user: {args['user_name']}")
+
+def create_iam_role(args):
+    iam_client = boto3.client('iam')
+    response = iam_client.create_role(
+        RoleName=args['role_name'],
+        AssumeRolePolicyDocument=args['assume_role_policy']
+    )
+    print(f"Created IAM role: {args['role_name']}")
+
+def create_iam_policy(args):
+    iam_client = boto3.client('iam')
+    with open(args['policy_document'], 'r') as f:
+        policy_document = f.read()
+    response = iam_client.create_policy(
+        PolicyName=args['policy_name'],
+        PolicyDocument=policy_document
+    )
+    print(f"Created IAM policy: {args['policy_name']}")
+
 def suggest_ami(args):
     ec2_client = boto3.client('ec2')
     response = ec2_client.describe_images(
@@ -90,6 +115,20 @@ def main():
 
     # Create subparsers for different commands
     subparsers = parser.add_subparsers(title='Commands', dest='command')
+
+    # Create a parser for the "create-iam-user" command
+    create_iam_user_parser = subparsers.add_parser('create-iam-user', help='Create an IAM user')
+    create_iam_user_parser.add_argument('-un', '--user_name', help='Name of the IAM user')
+
+    # Create a parser for the "create-iam-role" command
+    create_iam_role_parser = subparsers.add_parser('create-iam-role', help='Create an IAM role')
+    create_iam_role_parser.add_argument('-rn', '--role_name', help='Name of the IAM role')
+    create_iam_role_parser.add_argument('-asrp', '--assume-role-policy', help='Assume role policy document')
+
+    # Create a parser for the "create-iam-policy" command
+    create_iam_policy_parser = subparsers.add_parser('create-iam-poliy', help='Create an IAM policy')
+    create_iam_policy_parser.add_argument('-pn', '--policy_name', help='Name of the IAM policy')
+    create_iam_policy_parser.add_argument('-pd', '--policy_document', help='Path to the policy document'
 
     # Create a parser for the "create-instance" command
     create_instance_parser = subparsers.add_parser('create-instance', help='Create an instance')
@@ -136,6 +175,12 @@ def main():
         create_bucket(args)
     elif args['command'] == 'delete-bucket':
         delete_bucket(args)
+    elif args['command'] == 'create-iam-user':
+        create_iam_user(args)
+    elif args['command'] == 'create-iam-role':
+        create_iam_role(args)
+    elif args['command'] == 'create-iam-policy':
+        create_iam_policy(args)
     elif args['command'] == 'suggest-ami':
         suggest_ami(args)
     elif args['command'] == 'provision':
