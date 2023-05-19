@@ -21,7 +21,7 @@ def create_instance(args):
 
     else:
         ec2_client = boto3.client('ec2')
-        instance_name = args.get('instance_name') or 'name'
+        instance_name = args.get('instance_name') or 'default-name' # Use a default name if not provided
         response = ec2_client.run_instances(
             ImageId=args['image_id'],
             InstanceType=args['instance_type'],
@@ -33,13 +33,13 @@ def create_instance(args):
                     'Tags': [
                         {
                             'Key': 'Name',
-                            'Value': instance_name
+                            'Value': instance_name or ''
                         },
                     ]
                 },
             ]
         )
-        print(f"Created instance with id {args['image_id']} and name: {args[instance_name]}")
+        print(f"Created instance with id {args['image_id']} and name: {args['instance_name']}")
 
 def stop_instance(args):
     ec2_client = boto3.client('ec2')
@@ -165,7 +165,7 @@ def main():
 
     # Create a parser for the "create-instance" command
     create_instance_parser = subparsers.add_parser('create-instance', help='Create an instance')
-    create_instance_parser.add_argument('-in', '--instance-name', required=True, help='Name of the instance')
+    create_instance_parser.add_argument('-in', '--instance-name', help='Name of the instance')
     create_instance_parser.add_argument('-it', '--instance-type', required=True, help='Type of the instance')
     create_instance_parser.add_argument('-id', '--image-id', required=True, help='ID of the AMI image')
     create_instance_parser.add_argument('-f', '--file', help='Path to the YAML file')
