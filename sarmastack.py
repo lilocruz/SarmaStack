@@ -31,6 +31,20 @@ def create_instance(args):
     instance_id = response['Instances'][0]['InstanceId']
     print(f"Created EC2 instance with ID: {instance_id}")
 
+def stop_instance(args):
+    ec2_client = boto3.client('ec2')
+    response = ec2_client.stop_instances(
+        InstanceIds=[args['instance_id']]
+    )
+    print(f"Stopped EC2 instance with ID: {args['instance_id']}")
+
+def delete_instance(args):
+    ec2_client = boto3.client('ec2')
+    response = ec2_client.terminate_instances(
+        InstanceIds=[args['instance_id']]
+    )
+    print(f"Deleted EC2 instance with ID: {args['instance_id']}")
+
 def create_bucket(args):
     s3_client = boto3.client('s3')
     s3_client.create_bucket(Bucket=args['bucket_name'])
@@ -75,9 +89,17 @@ def main():
 
     # Create a parser for the "create-instance" command
     create_instance_parser = subparsers.add_parser('create-instance', help='Create an instance')
-    create_instance_parser.add_argument('-in', '--instance_name', help='Name of the instance')
+    create_instance_parser.add_argument('-in','--instance_name', help='Name of the instance')
     create_instance_parser.add_argument('-it', '--instance-type', help='Type of the instance')
     create_instance_parser.add_argument('-id', '--image-id', help='ID of the AMI image')
+
+    # Create a parser for the "stop-instance" command
+    stop_instance_parser = subparsers.add_parser('stop-instance', help='Stop an instance')
+    stop_instance_parser.add_argument('-id', '--instance_id', help='ID of the instance')
+
+    # Create a parser for the "delete-instance" command
+    delete_instance_parser = subparsers.add_parser('delete-instance', help='Delete an instance')
+    delete_instance_parser.add_argument('-id', '--instance_id', help='ID of the instance')
 
     # Create a parser for the "create-bucket" command
     create_bucket_parser = subparsers.add_parser('create-bucket', help='Create a bucket')
@@ -98,6 +120,10 @@ def main():
     # Handle the commands
     if args['command'] == 'create-instance':
         create_instance(args)
+    elif args['command'] == 'stop-instance':
+        stop_instance(args)
+    elif args['command'] == 'delete-instance':
+        delete_instance(args)
     elif args['command'] == 'create-bucket':
         create_bucket(args)
     elif args['command'] == 'suggest-ami':
