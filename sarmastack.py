@@ -98,16 +98,14 @@ def suggest_ami(args):
 
 def provision(args):
     with open(args['file'], 'r') as f:
-        spec = yaml.safe_load(f)
+        data = yaml.safe_load(f)
 
-    for resource in spec['resources']:
-        resource_type = resource['type']
-        if resource_type == 'instance':
-            create_instance(resource)
-        elif resource_type == 'bucket':
-            create_bucket(resource)
-        else:
-            print(f"Unknown resource type: {resource_type}")
+    if 'instances' in data:
+        instances = data['instances']
+        for instance in instances:
+            create_instance(instance)
+    else:
+        print("No instance specifications found in the YAML file.")
 
 def main():
     # Create the main argument parser
