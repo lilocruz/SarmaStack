@@ -8,11 +8,16 @@ import argparse
 import boto3
 import yaml
 
-def create_instance(args):
+def create_instance(instance):
+    instance_name = instance['name']
+    image_id = instance['image_id']
+    instance_type = instance['instance_type']
+    count = instance['count']
+
     ec2_client = boto3.client('ec2')
     response = ec2_client.run_instances(
-        ImageId=args['image_id'],
-        InstanceType=args['instance_type'],
+        ImageId=instance['image_id'],
+        InstanceType=instance['instance_type'],
         MinCount=1,
         MaxCount=1,
         TagSpecifications=[
@@ -21,14 +26,17 @@ def create_instance(args):
                 'Tags': [
                     {
                         'Key': 'Name',
-                        'Value': args['instance_name']
+                        'Value': instance['name']
                     },
                 ]
             },
         ]
     )
-    instance_id = response['Instances'][0]['InstanceId']
-    print(f"Created EC2 instance with ID: {instance_id}")
+    # instance_id = response['Instances'][0]['InstanceId']
+    # print(f"Created EC2 instance with ID: {instance_id}")
+    instances = response['Instances']
+    instance_ids = [instance['InstanceId'] for instance in instances]
+    print(f"Created instances {instance_ids} with name {instance_name}")
 
 def stop_instance(args):
     ec2_client = boto3.client('ec2')
@@ -44,10 +52,20 @@ def delete_instance(args):
     )
     print(f"Deleted EC2 instance with ID: {args['instance_id']}")
 
-def create_bucket(args):
+def create_bucket(bucket):
+    bucket_name = bucket['name']
+    region = bucket['region']
+
     s3_client = boto3.client('s3')
-    s3_client.create_bucket(Bucket=args['bucket_name'])
-    print(f"Created S3 bucket: {args['bucket_name']}")
+    response = s3_client.create_bucket(
+        Bucket=bucket_name,
+        CreateBucketConfiguration={
+            'LocationConstraint': region
+        }
+    )
+
+    # Print the created bucket name
+    print(f"Created bucket {bucket_name}")
 
 def delete_bucket(args):
     s3_client = boto3.client('s3')
