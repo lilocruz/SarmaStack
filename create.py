@@ -3,7 +3,7 @@ import json
 import yaml
 import botocore.exceptions
 
-class AWSCreateManager:
+class CreateManager:
     def __init__(self):
         self.s3_client = boto3.client('s3')
         self.ec2_client = boto3.client('ec2')

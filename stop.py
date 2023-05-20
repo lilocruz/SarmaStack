@@ -1,6 +1,6 @@
 import boto3
 
-class AWSStopManager:
+class StopManager:
     def __init__(self):
         self.ec2_client = boto3.client('ec2')
     

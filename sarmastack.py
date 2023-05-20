@@ -7,16 +7,18 @@
 import argparse
 import boto3
 import yaml
-from list import AWSManager
-from delete import AWSDeleteManager
-from create import AWSCreateManager
-from stop import AWSStopManager
+from list import ListManager
+from delete import DeleteManager
+from create import CreateManager
+from stop import StopManager
+from network import NetworkManager
 
-aws_manager = AWSManager()
-aws_delete_manager = AWSDeleteManager()
-aws_create_manager = AWSCreateManager()
-aws_stop_manager = AWSStopManager()
-  
+manager = ListManager()
+delete_manager = DeleteManager()
+create_manager = CreateManager()
+stop_manager = StopManager()
+network_manager = NetworkManager()
+
 def suggest_ami(args):
     ec2_client = boto3.client('ec2')
     response = ec2_client.describe_images(
@@ -41,14 +43,14 @@ def provision(args):
     if 'instances' in data:
         instances = data['instances']
         for instance in instances:
-            aws_create_manager.create_instance(instance)
+            create_manager.create_instance(instance)
     else:
         print("No instance specifications found in the YAML file.")
     
     if 'buckets' in data:
         buckets = data['buckets']
         for bucket in buckets:
-            aws_create_manager.create_bucket(bucket)
+            create_manager.create_bucket(bucket)
     else:
         print("No bucket specifications found in the YAML file.")
     
@@ -57,11 +59,11 @@ def provision(args):
         for resource in resources:
             resource_type = resource.get('type')
             if resource_type == 'iam_user':
-                aws_create_manager.create_iam_user(resource)
+                create_manager.create_iam_user(resource)
             elif resource_type == 'iam_role':
-                aws_create_manager.create_iam_role(resource)
+                create_manager.create_iam_role(resource)
             elif resource_type == 'iam_policy':
-                aws_create_manager.create_iam_policy(resource)
+                create_manager.create_iam_policy(resource)
             else:
                 print(f"Unsupported resource type: {resource_type}")
 
@@ -146,29 +148,29 @@ def main():
 
     # Handle the commands
     if args['command'] == 'create-instance':
-        aws_create_manager.create_instance(args)
+        create_manager.create_instance(args)
     elif args['command'] == 'stop-instance':
-        aws_stop_manager.stop_instance(args)
+        stop_manager.stop_instance(args)
     elif args['command'] == 'delete-instance':
-        aws_delete_manager.delete_instance(args)
+        delete_manager.delete_instance(args)
     elif args['command'] == 'create-bucket':
-        aws_create_manager.create_bucket(args)
+        create_manager.create_bucket(args)
     elif args['command'] == 'list-buckets':
-        aws_manager.list_buckets()
+        manager.list_buckets()
     elif args['command'] == 'list-users':
-        aws_manager.list_iam_users()
+        manager.list_iam_users()
     elif args['command'] == 'list-instances':
-        aws_manager.list_instances()
+        manager.list_instances()
     elif args['command'] == 'delete-bucket':
-        aws_delete_manager.delete_bucket(args)
+        delete_manager.delete_bucket(args)
     elif args['command'] == 'delete-iam-user':
-        aws_delete_manager.delete_iam_user(args)
+        delete_manager.delete_iam_user(args)
     elif args['command'] == 'create-iam-user':
-        aws_create_manager.create_iam_user(args)
+        create_manager.create_iam_user(args)
     elif args['command'] == 'create-iam-role':
-        aws_create_manager.create_iam_role(args)
+        create_manager.create_iam_role(args)
     elif args['command'] == 'create-iam-policy':
-        aws_create_manager.create_iam_policy(args)
+        create_manager.create_iam_policy(args)
     elif args['command'] == 'suggest-ami':
         suggest_ami(args)
     elif args['command'] == 'provision':

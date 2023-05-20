@@ -1,6 +1,6 @@
 import boto3
 
-class AWSManager:
+class ListManager:
     def __init__(self):
         self.s3_client = boto3.client('s3')
         self.iam_client = boto3.client('iam')

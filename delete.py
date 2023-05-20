@@ -1,7 +1,7 @@
 import boto3
 import yaml
 
-class AWSDeleteManager:
+class DeleteManager:
     def delete_instance(self, args):
         if args.get('file'):
             with open(args['file'], 'r') as f:
