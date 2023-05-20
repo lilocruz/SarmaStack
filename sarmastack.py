@@ -7,7 +7,7 @@
 import argparse
 import boto3
 import yaml
-from listobjects import AWSManager
+from list import AWSManager
 from delete import AWSDeleteManager
 from create import AWSCreateManager
 from stop import AWSStopManager
