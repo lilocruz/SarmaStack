@@ -6,234 +6,17 @@
 
 import argparse
 import boto3
-import botocore.exceptions
 import yaml
-import json
+from listobjects import AWSManager
+from delete import AWSDeleteManager
+from create import AWSCreateManager
+from stop import AWSStopManager
 
-def create_instance(args):
-    if args.get('file'):
-        with open(args['file'], 'r') as f:
-            data = yaml.save_load(f)
-            instances = data.get('instances')
-            if instances:
-                for instance in instances:
-                    create_instance(instance)
-            else:
-                print("No instances specifications found in the YAML file.")
-
-    else:
-        ec2_client = boto3.client('ec2')
-        instance_name = args.get('instance_name') or 'default-name' # Use a default name if not provided
-        response = ec2_client.run_instances(
-            ImageId=args['image_id'],
-            InstanceType=args['instance_type'],
-            MinCount=1,
-            MaxCount=1,
-            TagSpecifications=[
-                {
-                    'ResourceType': 'instance',
-                    'Tags': [
-                        {
-                            'Key': 'Name',
-                            'Value': instance_name or ''
-                        },
-                    ]
-                },
-            ]
-        )
-        print(f"Created instance with id {args['image_id']} and name: {args['instance_name']}")
-
-def stop_instance(args):
-    ec2_client = boto3.client('ec2')
-    response = ec2_client.stop_instances(
-        InstanceIds=[args['instance_id']]
-    )
-    print(f"Stopped EC2 instance with ID: {args['instance_id']}")
-
-def delete_instance(args):
-    if args.get('file'):
-        with open(args['file'], 'r') as f:
-            data = yaml.save_load(f)
-            instances = data.get('instances')
-            if instances:
-                instance_ids = [instance['instance_id'] for instance in instances]
-                delete_instance({'instance_ids': instance_ids})
-            else:
-                print("No instance specifications found in the YAML file.")
-    
-    else:
-        # Delete the instances using the CLI arguments
-        ec2_client = boto3.client('ec2')
-        instance_ids = args.get('instance_ids')
-        if instance_ids:
-            response = ec2_client.terminate_instances(InstanceIds=instance_ids)
-            print(f"Deleted instances: {args['instance_ids']}")
-
-def create_bucket(args):
-    s3_client = boto3.client('s3')
-
-    bucket_name = args.get('bucket_name')
-    region = args.get('region')
-
-    if bucket_name and region:
-        location_constraint = get_location_constraint(region)
-
-        try:
-            if location_constraint:
-                response = s3_client.create_bucket(
-                    Bucket=bucket_name,
-                    CreateBucketConfiguration={
-                        'LocationConstraint': location_constraint
-                    }
-                )
-            else:
-                response = s3_client.create_bucket(Bucket=bucket_name)
-            
-            print(f"Created bucket {bucket_name} in region {region}")
-        except botocore.exceptions.ClientError as e:
-            error_code = e.response['Error']['Code']
-            error_message = e.response['Error']['Message']
-            if error_code == 'BucketAlreadyExists':
-                print(f"Bucket {bucket_name} already exists.")
-            else:
-                print(f"Error occurred while creating the bucket: {error_message}")
-        except Exception as e:
-            print(f"Error occurred while creating the bucket: {str(e)}")
-    else:
-        print("Please provide both 'bucket_name' and 'region' arguments.")
-    
-
-def list_buckets(args):
-    s3_client = boto3.client('s3')
-    
-    try:
-        response = s3_client.list_buckets()
-        buckets = response['Buckets']
-        
-        if buckets:
-            print("List of buckets:")
-            for bucket in buckets:
-                bucket_name = bucket['Name']
-                creation_date = bucket['CreationDate']
-                print(f"- {bucket_name} (Created on: {creation_date})")
-        else:
-            print("No buckets found.")
-    except Exception as e:
-        print(f"Error occurred while listing buckets: {str(e)}")
-
-def list_iam_users(args):
-    iam_client = boto3.client('iam')
-
-    try:
-        response = iam_client.list_users()
-        users = response['Users']
-
-        if users:
-            print("List of IAM Users:")
-            for user in users:
-                user_name = user['UserName']
-                print(user_name)
-        else:
-            print("No IAM users found.")
-    except Exception as e:
-        print(f"Error occurred while listing IAM users: {str(e)}")
-
-def list_instances(args):
-    ec2_client = boto3.client('ec2')
-
-    try:
-        response = ec2_client.describe_instances()
-        reservations = response['Reservations']
-        instances = [instance for reservation in reservations for instance in reservation['Instances']]
-        
-        if instances:
-            print("List of instances:")
-            for instance in instances:
-                instance_id = instance['InstanceId']
-                instance_state = instance['State']['Name']
-                print(f"- {instance_id} (Phase: {instance_state})")
-        else:
-            print("No instances found.")
-    except Exception as e:
-        print(f"Error occurred while listing instances: {str(e)}")
-
-def get_location_constraint(region):
-    # AWS region to location constraint mapping
-    region_mapping = {
-        'us-east-1': '',  # Empty string for us-east-1 (N. Virginia)
-        'us-east-2': 'us-east-2',
-        'us-west-1': 'us-west-1',
-        'us-west-2': 'us-west-2',
-        'eu-west-1': 'EU',
-        # Add more region mappings as needed
-    }
-
-    return region_mapping.get(region, region)
-
-def delete_bucket(args):
-    s3_client = boto3.client('s3')
-
-    bucket_names = args.get('bucket_name')
-
-    if bucket_names:
-        for bucket_name in bucket_names:
-            try:
-                s3_client.delete_bucket(Bucket=bucket_name)
-                print(f"Deleted bucket {bucket_name}")
-            except Exception as e:
-                print(f"Error occurred while deleting bucket {bucket_name}: {str(e)}")
-    else:
-        print("Please provide the 'bucket_names' argument with a list of bucket names to delete.")
-
-def create_iam_user(args):
-    iam_client = boto3.client('iam')
-    response = iam_client.create_user(
-        UserName=args['user_name']
-    )
-    print(f"Created IAM user: {args['user_name']}")
-
-def delete_iam_user(args):
-    iam_client = boto3.client('iam')
-    user_name = args.get('user_name')
-
-    if user_name:
-        try:
-            response = iam_client.delete_user(UserName=user_name)
-            print(f"Deleted IAM user: {user_name}")
-        except Exception as e:
-            print(f"Error occurred while deleting IAM user: {str(e)}")
-    else:
-        print("Please provide the 'user_name' argument.")
-
-
-def create_iam_role(resource):
-    iam_client = boto3.client('iam')
-
-    role_name = resource.get('role_name')
-    assume_role_policy = resource.get('assume_role_policy')
-
-    if role_name and assume_role_policy:
-        try:
-            response = iam_client.create_role(
-                RoleName=role_name,
-                AssumeRolePolicyDocument=json.dumps(assume_role_policy)
-            )
-            print(f"Created IAM role {role_name}")
-        except Exception as e:
-            print(f"Error occurred while creating IAM role {role_name}: {str(e)}")
-    else:
-        print("Please provide both 'role_name' and 'assume_role_policy' arguments.")
-
-def create_iam_policy(args):
-    iam_client = boto3.client('iam')
-    with open(args['policy_document'], 'r') as f:
-        policy_document = f.read()
-    response = iam_client.create_policy(
-        PolicyName=args['policy_name'],
-        PolicyDocument=policy_document
-    )
-    print(f"Created IAM policy: {args['policy_name']}")
-
+aws_manager = AWSManager()
+aws_delete_manager = AWSDeleteManager()
+aws_create_manager = AWSCreateManager()
+aws_stop_manager = AWSStopManager()
+  
 def suggest_ami(args):
     ec2_client = boto3.client('ec2')
     response = ec2_client.describe_images(
@@ -258,14 +41,14 @@ def provision(args):
     if 'instances' in data:
         instances = data['instances']
         for instance in instances:
-            create_instance(instance)
+            aws_create_manager.create_instance(instance)
     else:
         print("No instance specifications found in the YAML file.")
     
     if 'buckets' in data:
         buckets = data['buckets']
         for bucket in buckets:
-            create_bucket(bucket)
+            aws_create_manager.create_bucket(bucket)
     else:
         print("No bucket specifications found in the YAML file.")
     
@@ -274,15 +57,18 @@ def provision(args):
         for resource in resources:
             resource_type = resource.get('type')
             if resource_type == 'iam_user':
-                create_iam_user(resource)
+                aws_create_manager.create_iam_user(resource)
             elif resource_type == 'iam_role':
-                create_iam_role(resource)
+                aws_create_manager.create_iam_role(resource)
             elif resource_type == 'iam_policy':
-                create_iam_policy(resource)
+                aws_create_manager.create_iam_policy(resource)
             else:
                 print(f"Unsupported resource type: {resource_type}")
 
+
 def main():
+    
+    #location = aws_manager.get_location_constraint('us-west-2')
     # Create the main argument parser
     parser = argparse.ArgumentParser(description='SarmaStack IaC by Michael Cruz Sanchez')
 
@@ -333,7 +119,7 @@ def main():
     create_bucket_parser.add_argument('-f', '--file', help='Path to the YAML file')
 
     # Create a parser for the "list-bucket" command
-    list_bucke_parser = subparsers.add_parser('list-bucket', help='List bucket')
+    list_bucke_parser = subparsers.add_parser('list-buckets', help='List bucket')
 
     # Create a parser for the "list-users" command
     list_users_parser = subparsers.add_parser('list-users', help='List IAM users')
@@ -360,29 +146,29 @@ def main():
 
     # Handle the commands
     if args['command'] == 'create-instance':
-        create_instance(args)
+        aws_create_manager.create_instance(args)
     elif args['command'] == 'stop-instance':
-        stop_instance(args)
+        aws_stop_manager.stop_instance(args)
     elif args['command'] == 'delete-instance':
-        delete_instance(args)
+        aws_delete_manager.delete_instance(args)
     elif args['command'] == 'create-bucket':
-        create_bucket(args)
-    elif args['command'] == 'list-bucket':
-        list_buckets(args)
+        aws_create_manager.create_bucket(args)
+    elif args['command'] == 'list-buckets':
+        aws_manager.list_buckets()
     elif args['command'] == 'list-users':
-        list_iam_users(args)
+        aws_manager.list_iam_users()
     elif args['command'] == 'list-instances':
-        list_instances(args)
+        aws_manager.list_instances()
     elif args['command'] == 'delete-bucket':
-        delete_bucket(args)
+        aws_delete_manager.delete_bucket(args)
     elif args['command'] == 'delete-iam-user':
-        delete_iam_user(args)
+        aws_delete_manager.delete_iam_user(args)
     elif args['command'] == 'create-iam-user':
-        create_iam_user(args)
+        aws_create_manager.create_iam_user(args)
     elif args['command'] == 'create-iam-role':
-        create_iam_role(args)
+        aws_create_manager.create_iam_role(args)
     elif args['command'] == 'create-iam-policy':
-        create_iam_policy(args)
+        aws_create_manager.create_iam_policy(args)
     elif args['command'] == 'suggest-ami':
         suggest_ami(args)
     elif args['command'] == 'provision':

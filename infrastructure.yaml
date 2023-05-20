@@ -4,7 +4,7 @@ instances:
     image_id: ami-053b0d53c279acc90
 
 buckets:
-  - bucket_name: kiki-bucket
+  - bucket_name: sarma-bucket
     region: us-east-1
 
 resources:
