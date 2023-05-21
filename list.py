@@ -70,6 +70,25 @@ class ListManager:
                 print("No VPCs found.")
         except Exception as e:
             print(f"Error occurred while listing VPCs: {str(e)}")
+    
+    def list_subnets(self):
+        try:
+            response = self.ec2_client.describe_subnets()
+            subnets = response['Subnets']
+            
+            if subnets:
+                print("List of Subnets:")
+                for subnet in subnets:
+                    subnet_id = subnet['SubnetId']
+                    vpc_id = subnet['VpcId']
+                    cidr_block = subnet['CidrBlock']
+                    state = subnet['State']
+                    availability_zone = subnet['AvailabilityZone']
+                    print(f"- Subnet ID: {subnet_id}, VPC ID: {vpc_id}, CIDR Block: {cidr_block}, State: {state}, Availability Zone: {availability_zone}")
+            else:
+                print("No Subnets found.")
+        except Exception as e:
+            print(f"Error occurred while listing Subnets: {str(e)}")
 
     @staticmethod
     def get_location_constraint(region):

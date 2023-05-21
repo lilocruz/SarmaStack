@@ -155,6 +155,9 @@ def main():
     # Create a parser for the "list-vpcs" command
     list_vpcs_parser = subparsers.add_parser('list-vpcs', help='List VPCs')
 
+    # Create a parser for the "list-subnets" command
+    list_subnets_parser = subparsers.add_parser('list-subnets', help='List Subnets')
+
     # Create a parser for the "delete-bucket" command
     delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a bucket')
     delete_bucket_parser.add_argument('-bn', '--bucket_name', nargs='+', help='Name of the bucket')
@@ -206,6 +209,8 @@ def main():
         manager.list_instances()
     elif args['command'] == 'list-vpcs':
         manager.list_vpcs()
+    elif args['command'] == 'list-subnets':
+        manager.list_subnets()
 
     # Network commands
     elif args['command'] == 'network':
