@@ -73,23 +73,32 @@ def main():
     #location = aws_manager.get_location_constraint('us-west-2')
     # Create the main argument parser
     parser = argparse.ArgumentParser(description='SarmaStack IaC by Michael Cruz Sanchez')
-
-    # Create subparsers for different commands
+     # Create subparsers for different commands
     subparsers = parser.add_subparsers(title='Commands', dest='command')
 
     # Create a parser for the "network" command
-    network_parser = subparsers.add_parser('network', help='Manage AWS Networking')
+    # network_parser = argparse.ArgumentParser(description='Manage AWS Networking')
 
     # Subparser for the network command
-    network_subparser = network_parser.add_subparsers(title='Action', dest='action')
+    network_parser = subparsers.add_parser('network', help='Network actions')
+    network_parser.add_argument('action', choices=['create-vpc', 'create-subnet', 'create-internet-gateway',
+                                              'attach-internet-gateway', 'create-route-table',
+                                              'create-route', 'associate-subnet-with-route-table',
+                                              'enable-vpc-dns-hostnames'], help='Action to perform')
+    network_parser.add_argument('--cidr-block', help='CIDR block for VPC or subnet')
+    network_parser.add_argument('--vpc-id', help='ID of the VPC')
+    network_parser.add_argument('--availability-zone', help='Availability zone for subnet')
+    network_parser.add_argument('--internet-gateway-id', help='ID of the internet gateway')
+    network_parser.add_argument('--route-table-id', help='ID of the route table')
+    network_parser.add_argument('--destination-cidr-block', help='Destination CIDR block for route')
 
     # Options for the network command
-    network_parser.add_argument('--cidr-block', help='CIDR block for VPC or subnet')
-    network_parser.add_argument('--availability-zone', help='Availability zone for subnet')
-    network_parser.add_argument('--vpc-id', help='ID of VPC')
-    network_parser.add_argument('--internet-gateway-id', help='ID of internet gateway')
-    network_parser.add_argument('--route-table-id', help='ID of route table')
-    network_parser.add_argument('--destination-cidr-block', help='Destination CIDR block for route')
+    # network_parser.add_argument('--cidr-block', help='CIDR block for VPC or subnet')
+    # network_parser.add_argument('--availability-zone', help='Availability zone for subnet')
+    # network_parser.add_argument('--vpc-id', help='ID of VPC')
+    # network_parser.add_argument('--internet-gateway-id', help='ID of internet gateway')
+    # network_parser.add_argument('--route-table-id', help='ID of route table')
+    # network_parser.add_argument('--destination-cidr-block', help='Destination CIDR block for route')
 
     # Create a parser for the "create-iam-user" command
     create_iam_user_parser = subparsers.add_parser('create-iam-user', help='Create an IAM user')
@@ -143,6 +152,9 @@ def main():
     # Create a parser for the "list-instances" command
     list_instances_parser = subparsers.add_parser('list-instances', help='List Instances')
 
+    # Create a parser for the "list-vpcs" command
+    list_vpcs_parser = subparsers.add_parser('list-vpcs', help='List VPCs')
+
     # Create a parser for the "delete-bucket" command
     delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a bucket')
     delete_bucket_parser.add_argument('-bn', '--bucket_name', nargs='+', help='Name of the bucket')
@@ -192,24 +204,29 @@ def main():
         manager.list_iam_users()
     elif args['command'] == 'list-instances':
         manager.list_instances()
+    elif args['command'] == 'list-vpcs':
+        manager.list_vpcs()
 
     # Network commands
     elif args['command'] == 'network':
-        if args.action == 'create-vpc':
-            network_manager.create_vpc(args.cidr_block)
-        elif args.action == 'create-subnet':
-            network_manager.create_subnet(args.vpc_id, args.cidr_block, args.availability_zone)
-        elif args.action == 'create-internet-gateway':
+        if args['action'] == 'create-vpc':
+            network_manager.create_vpc(args.get('cidr_block'))
+        elif args['action'] == 'create-subnet':
+            network_manager.create_subnet(args.get('vpc_id'), args.get('cidr_block'), args.get('availability_zone'))
+        elif args['action'] == 'create-internet-gateway':
             network_manager.create_internet_gateway()
-        elif args.action == 'attach-internet-gateway':
-            network_manager.attach_internet_gateway(args.vpc_id, args.internet_gateway_id)
-        elif args.action == 'create-route-table':
+        elif args['action'] == 'attach-internet-gateway':
+            network_manager.attach_internet_gateway(args.get('vpc_id'), args.get('internet_gateway_id'))
+        elif args['action'] == 'create-route-table':
             network_manager.create_route_table(args.vpc_id)
-        elif args.action == 'create-route':
-            network_manager.create_route(args.route_table_id, args.destination_cidr_block, args.internet_gateway_id)
+        elif args['action'] == 'create-route':
+            network_manager.create_route(args.get('route_table_id'), args.get('destination_cidr_block'), args.get('internet_gateway_id'))
+        elif args['action'] == 'associate-subnet-with-route-table':
+            network_manager.associate_subnet_with_route_table(args.get('subnet_id'), args.get('route_table_id'))
+        elif args['action'] == 'enable-vpc-dns-hostnames':
+            network_manager.enable_vpc_dns_hostnames(args.get('vpc_id'))
         else:
-            print("Invalid action for 'network' command")
-    
+            print("Invalid action for 'network' command.")
     # Suggest commands
     elif args['command'] == 'suggest-ami':
         suggest_ami(args)

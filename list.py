@@ -53,6 +53,23 @@ class ListManager:
                 print("No instances found.")
         except Exception as e:
             print(f"Error occurred while listing instances: {str(e)}")
+        
+    def list_vpcs(self):
+        try:
+            response = self.ec2_client.describe_vpcs()
+            vpcs = response['Vpcs']
+            
+            if vpcs:
+                print("List of VPCs:")
+                for vpc in vpcs:
+                    vpc_id = vpc['VpcId']
+                    cidr_block = vpc['CidrBlock']
+                    state = vpc['State']
+                    print(f"- VPC ID: {vpc_id}, CIDR Block: {cidr_block}, State: {state}")
+            else:
+                print("No VPCs found.")
+        except Exception as e:
+            print(f"Error occurred while listing VPCs: {str(e)}")
 
     @staticmethod
     def get_location_constraint(region):
