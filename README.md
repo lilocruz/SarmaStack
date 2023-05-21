@@ -4,7 +4,7 @@ SarmaStack is an Infrastructure as Code (IaC) tool designed to simplify the prov
 
 ## Features
 
-- Declarative configuration language for defining infrastructure resources
+- YAML for defining infrastructure resources
 - Integration with AWS services through Boto3
 - CLI for managing and provisioning infrastructure resources
 - Suggestion feature to recommend AMI image IDs based on specified criteria
