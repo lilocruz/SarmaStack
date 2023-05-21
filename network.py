@@ -5,21 +5,42 @@ class NetworkManager:
         self.ec2_client = boto3.client('ec2')
         self.vpc_client = boto3.client('ec2')
 
-    def create_vpc(self, cidr_block):
+    def create_vpc(self, vpc_name, cidr_block):
         response = self.vpc_client.create_vpc(
             CidrBlock=cidr_block
         )
         vpc_id = response['Vpc']['VpcId']
-        print(f"Created VPC with ID: {vpc_id}")
 
-    def create_subnet(self, vpc_id, cidr_block, availability_zone):
+        self.vpc_client.create_tags(
+            Resources=[vpc_id],
+            Tags=[
+                {
+                    'Key': 'Name',
+                    'Value': vpc_name
+                }
+            ]
+        )
+
+        print(f"Created VPC with Name: {vpc_name} and ID: {vpc_id}")
+
+    def create_subnet(self, subnet_name, vpc_id, cidr_block, availability_zone):
         response = self.ec2_client.create_subnet(
             VpcId=vpc_id,
             CidrBlock=cidr_block,
             AvailabilityZone=availability_zone
         )
         subnet_id = response['Subnet']['SubnetId']
-        print(f"Created subnet with ID: {subnet_id}")
+
+        self.vpc_client.create_tags(
+            Resources=[subnet_id],
+            Tags=[
+                {
+                    'Key': 'Name',
+                    'Value': subnet_name
+                }
+            ]
+        )
+        print(f"Created subnet with Name: {subnet_name} and ID: {subnet_id}")
 
     def create_internet_gateway(self):
         response = self.ec2_client.create_internet_gateway()

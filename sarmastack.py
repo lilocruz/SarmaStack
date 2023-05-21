@@ -85,12 +85,14 @@ def main():
                                               'attach-internet-gateway', 'create-route-table',
                                               'create-route', 'associate-subnet-with-route-table',
                                               'enable-vpc-dns-hostnames'], help='Action to perform')
-    network_parser.add_argument('--cidr-block', help='CIDR block for VPC or subnet')
-    network_parser.add_argument('--vpc-id', help='ID of the VPC')
-    network_parser.add_argument('--availability-zone', help='Availability zone for subnet')
-    network_parser.add_argument('--internet-gateway-id', help='ID of the internet gateway')
-    network_parser.add_argument('--route-table-id', help='ID of the route table')
-    network_parser.add_argument('--destination-cidr-block', help='Destination CIDR block for route')
+    network_parser.add_argument('-cidb', '--cidr-block', help='CIDR block for VPC or subnet')
+    network_parser.add_argument('-vpi', '--vpc-id', help='ID of the VPC')
+    network_parser.add_argument('-avz', '--availability-zone', help='Availability zone for subnet')
+    network_parser.add_argument('-igd', '--internet-gateway-id', help='ID of the internet gateway')
+    network_parser.add_argument('-rti', '--route-table-id', help='ID of the route table')
+    network_parser.add_argument('-dcb', '--destination-cidr-block', help='Destination CIDR block for route')
+    network_parser.add_argument('-vpn', '--vpc-name', help='Name of the VPC')
+    network_parser.add_argument('-sbn', '--subnet-name', help='Name of the Subnet')
 
     # Options for the network command
     # network_parser.add_argument('--cidr-block', help='CIDR block for VPC or subnet')
@@ -215,9 +217,9 @@ def main():
     # Network commands
     elif args['command'] == 'network':
         if args['action'] == 'create-vpc':
-            network_manager.create_vpc(args.get('cidr_block'))
+            network_manager.create_vpc(args.get('vpc_name'), args.get('cidr_block'))
         elif args['action'] == 'create-subnet':
-            network_manager.create_subnet(args.get('vpc_id'), args.get('cidr_block'), args.get('availability_zone'))
+            network_manager.create_subnet(args.get('subnet_name'), args.get('vpc_id'), args.get('cidr_block'), args.get('availability_zone'))
         elif args['action'] == 'create-internet-gateway':
             network_manager.create_internet_gateway()
         elif args['action'] == 'attach-internet-gateway':
