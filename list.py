@@ -65,7 +65,12 @@ class ListManager:
                     vpc_id = vpc['VpcId']
                     cidr_block = vpc['CidrBlock']
                     state = vpc['State']
-                    print(f"- VPC ID: {vpc_id}, CIDR Block: {cidr_block}, State: {state}")
+                    # Retrieve VPC tags
+                    tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [vpc_id]}])
+                    tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
+                    vpc_name = tags.get('Name', 'N/A')                
+                    
+                    print(f"- VPC Name: {vpc_name if vpc_name else 'N/A'}, VPC ID: {vpc_id}, CIDR Block: {cidr_block}, State: {state}")
             else:
                 print("No VPCs found.")
         except Exception as e:

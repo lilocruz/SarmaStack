@@ -4,7 +4,7 @@ instances:
     image_id: ami-053b0d53c279acc90
 
 buckets:
-  - bucket_name: sarma-bucket
+  - bucket_name: sarmatool-bucket
     region: us-east-1
 
 resources:
@@ -12,3 +12,26 @@ resources:
     user_name: lilo-user
   - type: iam_role
     role_name: lilo-role
+
+Resources:
+  MyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: lilo-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: liloPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: arn:aws:s3:::my-bucket/*
