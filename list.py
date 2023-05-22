@@ -48,7 +48,13 @@ class ListManager:
                 for instance in instances:
                     instance_id = instance['InstanceId']
                     instance_state = instance['State']['Name']
-                    print(f"- {instance_id} (Phase: {instance_state})")
+
+                    # Retrieve instance tags
+                    tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [instance_id]}])
+                    tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
+                    instance_name = tags.get('Name', 'N/A')
+                    
+                    print(f"- Instance Name: {instance_name}, {instance_id} (Phase: {instance_state})")
             else:
                 print("No instances found.")
         except Exception as e:
