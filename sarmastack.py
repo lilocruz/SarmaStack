@@ -138,7 +138,11 @@ def main():
 
     # Create a parser for the "delete-iam-user" command
     delete_iam_user_parser = subparsers.add_parser('delete-iam-user', help='Delete an IAM user')
-    delete_iam_user_parser.add_argument('-un', '--user_name', help='Username of the IAM user')
+    delete_iam_user_parser.add_argument('-un', '--user_name', help='User name of the IAM user')
+
+    # Create a parser for the "delete-iam-role" command
+    delete_iam_role_parser = subparsers.add_parser('delete-iam-role', help='Delete an IAM role')
+    delete_iam_role_parser.add_argument('-rn', '--role_name', help='Role name of the IAM role')
 
 
     # Create a parser for the "create-bucket" command
@@ -161,6 +165,9 @@ def main():
 
     # Create a parser for the "list-subnets" command
     list_subnets_parser = subparsers.add_parser('list-subnets', help='List Subnets')
+
+    # Create a parser for the "list-roles" command
+    list_roles_parser = subparsers.add_parser('list-roles', help='List IAM roles')
 
     # Create a parser for the "delete-bucket" command
     delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a bucket')
@@ -203,6 +210,8 @@ def main():
         delete_manager.delete_bucket(args)
     elif args['command'] == 'delete-iam-user':
         delete_manager.delete_iam_user(args)
+    elif args['command'] == 'delete-iam-role':
+        delete_manager.delete_iam_role(args)
     
     # List commands
     elif args['command'] == 'list-buckets':
@@ -215,6 +224,8 @@ def main():
         manager.list_vpcs()
     elif args['command'] == 'list-subnets':
         manager.list_subnets()
+    elif args['command'] == 'list-roles':
+        manager.list_iam_roles()
 
     # Network commands
     elif args['command'] == 'network':

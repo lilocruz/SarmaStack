@@ -36,7 +36,22 @@ class ListManager:
                 print("No IAM users found.")
         except Exception as e:
             print(f"Error occurred while listing IAM users: {str(e)}")
+    
+    def list_iam_roles(self):
+        try:
+            response = self.iam_client.list_roles()
+            roles = response['Roles']
 
+            if roles:
+                print("List of IAM Roles:")
+                for role in roles:
+                    role_name = role['RoleName']
+                    print(role_name)
+            else:
+                print("No IAM roles found.")
+        except Exception as e:
+            print(f"Error occurred while listing IAM : {str(e)}")
+    
     def list_instances(self):
         try:
             response = self.ec2_client.describe_instances()

@@ -47,4 +47,16 @@ class DeleteManager:
                 print(f"Error occurred while deleting IAM user: {str(e)}")
         else:
             print("Please provide the 'user_name' argument.")
+    
+    def delete_iam_role(self, args):
+        iam_client = boto3.client('iam')
+        role_name = args.get('role_name')
 
+        if role_name:
+            try:
+                response = iam_client.delete_role(RoleName=role_name)
+                print(f"Deleted IAM role: {role_name}")
+            except Exception as e:
+                print(f"Error occurred while deleting IAM roles: {str(e)}")
+        else:
+            print("Please provide the 'role_name' argument.")
