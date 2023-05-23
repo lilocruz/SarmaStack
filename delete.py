@@ -99,3 +99,16 @@ class DeleteManager:
                 print(f"Error occured while deleting Route Table: {str(e)}")
         else:
             print("Please provide the 'route_table_id' argument.")
+
+    def delete_internet_gateway(self, args):
+        ec2_client = boto3.client('ec2')
+        internet_gateay_id = args.get('internet_gateway_id')
+
+        if internet_gateay_id:
+            try:
+                response = ec2_client.delete_internet_gateway(InternetGatewayId=internet_gateay_id)
+                print(f"Deleted Internet Gateway: {internet_gateay_id}")
+            except Exception as e:
+                print(f"Error occurdd while deleting Internet Gateway: {str(e)}")
+        else:
+            print("Please provide the 'internet_gateway_id' argument.")

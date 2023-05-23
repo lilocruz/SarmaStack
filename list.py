@@ -110,11 +110,33 @@ class ListManager:
                     cidr_block = subnet['CidrBlock']
                     state = subnet['State']
                     availability_zone = subnet['AvailabilityZone']
-                    print(f"- Subnet ID: {subnet_id}, VPC ID: {vpc_id}, CIDR Block: {cidr_block}, State: {state}, Availability Zone: {availability_zone}")
+                    tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [subnet_id]}])
+                    tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
+                    subnet_name = tags.get('Name', 'N/A')
+                    print(f"- Subnet Name: {subnet_name}, Subnet ID: {subnet_id}, VPC ID: {vpc_id}, CIDR Block: {cidr_block}, State: {state}, Availability Zone: {availability_zone}")
             else:
                 print("No Subnets found.")
         except Exception as e:
             print(f"Error occurred while listing Subnets: {str(e)}")
+    
+    def list_internet_gateway(self):
+        try:
+            response = self.ec2_client.describe_internet_gateways()
+            internetgateways = response['InternetGateways']
+
+            if internetgateways:
+                print("List of Internet Gateways:")
+                for internetgateway in internetgateways:
+                    internetgateway_id = internetgateway['InternetGatewayId']
+                    tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [internetgateway_id]}])
+                    tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
+                    internet_gateway_name = tags.get('Name', 'N/A')
+                    print(f"- Internet Gateway Name: {internet_gateway_name}, Internet Gateway ID: {internetgateway_id}")
+            else:
+                print("No Internget Gateway found.")
+        except Exception as e:
+            print(f"Error occured while listing Internet Gateways: {str(e)}")
+    
     
     def list_route_tables(self):
         try:
@@ -128,7 +150,10 @@ class ListManager:
                     vpc_id = route_table['VpcId']
                     routes = route_table['Routes']
                     associations = route_table['Associations']
-                    print(f"- Route Table ID: {route_table_id}, VPC ID: {vpc_id}")
+                    tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [route_table_id]}])
+                    tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
+                    route_tables_name = tags.get('Name', 'N/A')
+                    print(f"- Route Table Name: {route_tables_name}, Route Table ID: {route_table_id}, VPC ID: {vpc_id}")
                     print("  Routes:")
                     for route in routes:
                         destination_cidr_block = route.get('DestinationCidrBlock')

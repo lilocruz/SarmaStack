@@ -172,6 +172,9 @@ def main():
     # Create a parser for the "list-route-tables" command
     list_route_tables = subparsers.add_parser('list-route-tables', help='List Route Tables')
 
+    # Create a parser for the "list-internet-gateways" command
+    list_internet_gateways_parser = subparsers.add_parser('list-internet-gateways', help='List Internet Gateways')
+
     # Create a parser for the "delete-bucket" command
     delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a Bucket')
     delete_bucket_parser.add_argument('-bn', '--bucket_name', nargs='+', help='Name of the bucket')
@@ -187,6 +190,10 @@ def main():
     # Create a parser for the "delete-route-table" command
     delete_route_table_parser = subparsers.add_parser('delete-route-table', help='Delete a Route Table')
     delete_route_table_parser.add_argument('-rti', '--route_table_id', help='Name of the Route Table')
+
+    # Create a parser for the "delete-internet-gateway" command
+    delete_internet_gateway_parser = subparsers.add_parser('delete-internet-gateway', help='Delete an Internet Gateway')
+    delete_internet_gateway_parser.add_argument('-igi', '--internet_gateway_id', help='ID of the internet Gateway')
 
     # Create a parser for the "suggest-ami" command
     suggest_ami_parser = subparsers.add_parser('suggest-ami', help='Suggest AMI image IDs')
@@ -232,6 +239,8 @@ def main():
         delete_manager.delete_subnet(args)
     elif args['command'] == 'delete-route-table':
         delete_manager.delete_route_table(args)
+    elif args['command'] == 'delete-internet-gateway':
+        delete_manager.delete_internet_gateway(args)
     
     # List commands
     elif args['command'] == 'list-buckets':
@@ -248,6 +257,8 @@ def main():
         manager.list_iam_roles()
     elif args['command'] == 'list-route-tables':
         manager.list_route_tables()
+    elif args['command'] == 'list-internet-gateways':
+        manager.list_internet_gateway()
 
     # Network commands
     elif args['command'] == 'network':
