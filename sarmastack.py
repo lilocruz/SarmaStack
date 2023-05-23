@@ -61,7 +61,9 @@ def provision(args):
             if resource_type == 'iam_user':
                 create_manager.create_iam_user(resource)
             elif resource_type == 'iam_role':
-                create_manager.create_iam_role(resource)
+                role_name = resource.get('role_name')
+                assume_role_policy = resource.get('assume_role_policy')
+                create_manager.create_iam_role(role_name, assume_role_policy)
             elif resource_type == 'iam_policy':
                 create_manager.create_iam_policy(resource)
             else:
@@ -191,7 +193,7 @@ def main():
         create_manager.create_iam_policy(args)
     
     # Stop commands
-    elif args['command'] == 'stop-instance':
+    elif args['command'] == 'stop-instances':
         stop_manager.stop_instance(args)
     
     # Delete commands

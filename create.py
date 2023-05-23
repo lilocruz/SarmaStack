@@ -78,21 +78,15 @@ class CreateManager:
         )
         print(f"Created IAM user: {args['user_name']}")
 
-    def create_iam_role(self, resource):
-        role_name = resource.get('role_name')
-        assume_role_policy = resource.get('assume_role_policy')
-
-        if role_name and assume_role_policy:
-            try:
-                response = self.iam_client.create_role(
-                    RoleName=role_name,
-                    AssumeRolePolicyDocument=json.dumps(assume_role_policy)
-                )
-                print(f"Created IAM role {role_name}")
-            except Exception as e:
-                print(f"Error occurred while creating IAM role {role_name}: {str(e)}")
-        else:
-            print("Please provide both 'role_name' and 'assume_role_policy' arguments.")
+    def create_iam_role(self, role_name, assume_role_policy):
+        try:
+            response = self.iam_client.create_role(
+                RoleName=role_name,
+                AssumeRolePolicyDocument=json.dumps(assume_role_policy)
+            )
+            print(f"Created IAM role: {role_name}")
+        except Exception as e:
+            print(f"Error occurred while creating IAM role: {str(e)}")
 
     def create_iam_policy(self, args):
         with open(args['policy_document'], 'r') as f:

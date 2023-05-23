@@ -1,37 +1,22 @@
 instances:
-  - instance_name: acl-lab
+  - instance_name: codigolibre-lab6-instance
     instance_type: t2.micro
     image_id: ami-053b0d53c279acc90
 
 buckets:
-  - bucket_name: sarmatool-bucket
+  - bucket_name: codigolibre-lab6-bucket
     region: us-east-1
 
 resources:
   - type: iam_user
-    user_name: lilo-user
+    user_name: codigo6-user
   - type: iam_role
-    role_name: lilo-role
+    role_name: codigo6-role
+    assume_role_policy:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: ec2.amazonaws.com
+          Action: sts:AssumeRole
 
-Resources:
-  MyRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: lilo-role
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ec2.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: liloPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:PutObject
-                Resource: arn:aws:s3:::my-bucket/*
