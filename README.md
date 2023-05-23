@@ -88,6 +88,6 @@ Contributions to SarmaStack are welcome! If you have any suggestions, bug report
 
 ## License
 
-This project is licensed under the `GPLv3+` License. 
+This project is licensed under the `GPLv3` License. 
 
 
