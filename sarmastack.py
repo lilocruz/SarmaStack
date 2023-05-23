@@ -155,7 +155,7 @@ def main():
     list_bucke_parser = subparsers.add_parser('list-buckets', help='List bucket')
 
     # Create a parser for the "list-users" command
-    list_users_parser = subparsers.add_parser('list-users', help='List IAM users')
+    list_users_parser = subparsers.add_parser('list-users', help='List IAM Users')
     
     # Create a parser for the "list-instances" command
     list_instances_parser = subparsers.add_parser('list-instances', help='List Instances')
@@ -167,12 +167,19 @@ def main():
     list_subnets_parser = subparsers.add_parser('list-subnets', help='List Subnets')
 
     # Create a parser for the "list-roles" command
-    list_roles_parser = subparsers.add_parser('list-roles', help='List IAM roles')
+    list_roles_parser = subparsers.add_parser('list-roles', help='List IAM Roles')
 
     # Create a parser for the "delete-bucket" command
-    delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a bucket')
+    delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a Bucket')
     delete_bucket_parser.add_argument('-bn', '--bucket_name', nargs='+', help='Name of the bucket')
 
+    # Create a parser for the "delete-vpc" command
+    delete_vpc_parser = subparsers.add_parser('delete-vpc', help='Delete a Vpc')
+    delete_vpc_parser.add_argument('-vpi', '--vpc_id', help='Name of the vpc')
+
+    # Create a parser for the "delete-subnet" command
+    delete_subnet_parser = subparsers.add_parser('delete-subnet', help='Delete a Subnet')
+    delete_subnet_parser.add_argument('-sbi', '--subnet_id', help='Name of the Subnet')
 
     # Create a parser for the "suggest-ami" command
     suggest_ami_parser = subparsers.add_parser('suggest-ami', help='Suggest AMI image IDs')
@@ -212,6 +219,10 @@ def main():
         delete_manager.delete_iam_user(args)
     elif args['command'] == 'delete-iam-role':
         delete_manager.delete_iam_role(args)
+    elif args['command'] == 'delete-vpc':
+        delete_manager.delete_vpc(args)
+    elif args['command'] == 'delete-subnet':
+        delete_manager.delete_subnet(args)
     
     # List commands
     elif args['command'] == 'list-buckets':

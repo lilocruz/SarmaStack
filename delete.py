@@ -60,3 +60,29 @@ class DeleteManager:
                 print(f"Error occurred while deleting IAM roles: {str(e)}")
         else:
             print("Please provide the 'role_name' argument.")
+    
+    def delete_vpc(self, args):
+        ec2_client = boto3.client('ec2')
+        vpc_id = args.get('vpc_id')
+
+        if vpc_id:
+            try:
+                response = ec2_client.delete_vpc(VpcId=vpc_id)
+                print(f"Deleted VPC: {vpc_id}")
+            except Exception as e:
+                print(f"Error occurred while deleting VPC: {str(e)}")
+        else:
+            print("Please provide the 'vpc_id' argument.")
+    
+    def delete_subnet(self, args):
+        ec2_client = boto3.client('ec2')
+        subnet_id = args.get('subnet_id')
+
+        if subnet_id:
+            try:
+                response = ec2_client.delete_subnet(SubnetId=subnet_id)
+                print(f"Delete Subnet: {subnet_id}")
+            except Exception as e:
+                print(f"Error occured while deliting Subnet: {str(e)}")
+        else:
+            print("Please provide the 'subnet_id' argument.")
