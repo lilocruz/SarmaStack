@@ -117,26 +117,7 @@ class ListManager:
             else:
                 print("No Subnets found.")
         except Exception as e:
-            print(f"Error occurred while listing Subnets: {str(e)}")
-    
-    def list_internet_gateway(self):
-        try:
-            response = self.ec2_client.describe_internet_gateways()
-            internetgateways = response['InternetGateways']
-
-            if internetgateways:
-                print("List of Internet Gateways:")
-                for internetgateway in internetgateways:
-                    internetgateway_id = internetgateway['InternetGatewayId']
-                    tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [internetgateway_id]}])
-                    tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
-                    internet_gateway_name = tags.get('Name', 'N/A')
-                    print(f"- Internet Gateway Name: {internet_gateway_name}, Internet Gateway ID: {internetgateway_id}")
-            else:
-                print("No Internget Gateway found.")
-        except Exception as e:
-            print(f"Error occured while listing Internet Gateways: {str(e)}")
-    
+            print(f"Error occurred while listing Subnets: {str(e)}")   
     
     def list_route_tables(self):
         try:
