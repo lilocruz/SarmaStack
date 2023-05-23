@@ -169,6 +169,9 @@ def main():
     # Create a parser for the "list-roles" command
     list_roles_parser = subparsers.add_parser('list-roles', help='List IAM Roles')
 
+    # Create a parser for the "list-route-tables" command
+    list_route_tables = subparsers.add_parser('list-route-tables', help='List Route Tables')
+
     # Create a parser for the "delete-bucket" command
     delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a Bucket')
     delete_bucket_parser.add_argument('-bn', '--bucket_name', nargs='+', help='Name of the bucket')
@@ -180,6 +183,10 @@ def main():
     # Create a parser for the "delete-subnet" command
     delete_subnet_parser = subparsers.add_parser('delete-subnet', help='Delete a Subnet')
     delete_subnet_parser.add_argument('-sbi', '--subnet_id', help='Name of the Subnet')
+
+    # Create a parser for the "delete-route-table" command
+    delete_route_table_parser = subparsers.add_parser('delete-route-table', help='Delete a Route Table')
+    delete_route_table_parser.add_argument('-rti', '--route_table_id', help='Name of the Route Table')
 
     # Create a parser for the "suggest-ami" command
     suggest_ami_parser = subparsers.add_parser('suggest-ami', help='Suggest AMI image IDs')
@@ -223,6 +230,8 @@ def main():
         delete_manager.delete_vpc(args)
     elif args['command'] == 'delete-subnet':
         delete_manager.delete_subnet(args)
+    elif args['command'] == 'delete-route-table':
+        delete_manager.delete_route_table(args)
     
     # List commands
     elif args['command'] == 'list-buckets':
@@ -237,6 +246,8 @@ def main():
         manager.list_subnets()
     elif args['command'] == 'list-roles':
         manager.list_iam_roles()
+    elif args['command'] == 'list-route-tables':
+        manager.list_route_tables()
 
     # Network commands
     elif args['command'] == 'network':

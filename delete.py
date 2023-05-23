@@ -83,6 +83,19 @@ class DeleteManager:
                 response = ec2_client.delete_subnet(SubnetId=subnet_id)
                 print(f"Delete Subnet: {subnet_id}")
             except Exception as e:
-                print(f"Error occured while deliting Subnet: {str(e)}")
+                print(f"Error occured while deleting Subnet: {str(e)}")
         else:
             print("Please provide the 'subnet_id' argument.")
+    
+    def delete_route_table(self, args):
+        ec2_client = boto3.client('ec2')
+        route_table_id = args.get('route_table_id')
+
+        if route_table_id:
+            try:
+                response = ec2_client.delete_route_table(RouteTableId=route_table_id)
+                print(f"Delted Route Table: {route_table_id}")
+            except Exception as e:
+                print(f"Error occured while deleting Route Table: {str(e)}")
+        else:
+            print("Please provide the 'route_table_id' argument.")

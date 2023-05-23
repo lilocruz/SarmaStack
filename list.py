@@ -115,6 +115,36 @@ class ListManager:
                 print("No Subnets found.")
         except Exception as e:
             print(f"Error occurred while listing Subnets: {str(e)}")
+    
+    def list_route_tables(self):
+        try:
+            response = self.ec2_client.describe_route_tables()
+            route_tables = response['RouteTables']
+
+            if route_tables:
+                print("List of Route Tables:")
+                for route_table in route_tables:
+                    route_table_id = route_table['RouteTableId']
+                    vpc_id = route_table['VpcId']
+                    routes = route_table['Routes']
+                    associations = route_table['Associations']
+                    print(f"- Route Table ID: {route_table_id}, VPC ID: {vpc_id}")
+                    print("  Routes:")
+                    for route in routes:
+                        destination_cidr_block = route.get('DestinationCidrBlock')
+                        gateway_id = route.get('GatewayId')
+                        if destination_cidr_block and gateway_id:
+                            print(f"    Destination: {destination_cidr_block}, Gateway ID: {gateway_id}")
+                    print("  Associations:")
+                    for association in associations:
+                        subnet_id = association.get('SubnetId')
+                        main = association.get('Main')
+                        if subnet_id:
+                            print(f"    Subnet ID: {subnet_id}, Main: {main}")
+            else:
+                print("No Route Tables found.")
+        except Exception as e:
+            print(f"Error occurred while listing Route Tables: {str(e)}")
 
     @staticmethod
     def get_location_constraint(region):
