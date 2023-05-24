@@ -162,7 +162,10 @@ class ListManager:
                 print("List Internet Gateways:")
                 for intertgateway in internetgateways:
                     internetgateway_id = intertgateway['InternetGatewayId']
-                    print(f"- Internet Gateway ID: {internetgateway_id}")
+                    tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [internetgateway_id]}])
+                    tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
+                    internetgateway_name = tags.get('Name', 'N/A')
+                    print(f"- Internet Gateway Name: {internetgateway_name}, Internet Gateway ID: {internetgateway_id}")
             else:
                 print("No Internet Gateways Found.")
         except Exception as e:
