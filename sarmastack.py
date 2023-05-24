@@ -69,7 +69,6 @@ def provision(args):
             else:
                 print(f"Unsupported resource type: {resource_type}")
 
-
 def main():
     
     #location = aws_manager.get_location_constraint('us-west-2')
