@@ -152,6 +152,23 @@ class ListManager:
         except Exception as e:
             print(f"Error occurred while listing Route Tables: {str(e)}")
 
+    
+    def list_internet_gateways(self):
+        try:
+            response = self.ec2_client.describe_internet_gateways()
+            internetgateways = response['InternetGateways']
+
+            if internetgateways:
+                print("List Internet Gateways:")
+                for intertgateway in internetgateways:
+                    internetgateway_id = intertgateway['InternetGatewayId']
+                    print(f"- Internet Gateway ID: {internetgateway_id}")
+            else:
+                print("No Internet Gateways Found.")
+        except Exception as e:
+            print(f"Error occured while listing Internet Gateways: {str(e)}")
+
+
     @staticmethod
     def get_location_constraint(region):
         region_mapping = {

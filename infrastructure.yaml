@@ -1,17 +1,17 @@
 instances:
-  - instance_name: codigolibre-lab7-instance
+  - instance_name: conferencia-maquina
     instance_type: t2.micro
     image_id: ami-053b0d53c279acc90
 
 buckets:
-  - bucket_name: codigolibre-lab7-bucket
+  - bucket_name: conferencia-bucket
     region: us-east-1
 
 resources:
   - type: iam_user
-    user_name: codigo7-user
+    user_name: conferencia-user
   - type: iam_role
-    role_name: codigo7-role
+    role_name: conferencia-role
     assume_role_policy:
       Version: "2012-10-17"
       Statement:
