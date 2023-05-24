@@ -171,9 +171,6 @@ def main():
 
     # Create a parser for the "list-route-tables" command
     list_route_tables = subparsers.add_parser('list-route-tables', help='List Route Tables') 
-
-    # Create a parser for the "list-internet-gateways" command
-    list_internet_gateways_parser = subparsers.add_parser('list-internet-gateways', help='List the Internet Gateways')
     
     # Create a parser for the "delete-bucket" command
     delete_bucket_parser = subparsers.add_parser('delete-bucket', help='Delete a Bucket')
@@ -257,8 +254,6 @@ def main():
         manager.list_iam_roles()
     elif args['command'] == 'list-route-tables':
         manager.list_route_tables()
-    elif args['command'] == 'list-internet-gateways':
-        manager.list_internet_gateways()
 
     # Network commands
     elif args['command'] == 'network':
