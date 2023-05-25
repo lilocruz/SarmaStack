@@ -78,8 +78,12 @@ class ListManager:
                     tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
                     instance_name = tags.get('Name', 'N/A')
                     table_data.append([instance_name, instance_id, instance_type, state, launch_time])
-                    headers = ['Instance Name', 'Instance ID', 'Instance Type', 'State', 'Launch Time']
-                    print(tabulate(table_data, headers, tablefmt="fancy_grid"))
+
+            headers = ['Instance Name', 'Instance ID', 'Instance Type', 'State', 'Launch Time']
+            if table_data:
+                print(tabulate(table_data, headers, tablefmt="fancy_grid"))
+            else:
+                print("No instances found.")
         else:
             print("No instances found.")
         
