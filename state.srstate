@@ -1,8 +1,12 @@
 bucket:
-  conferencia4-bucket: created
+  conferencia4-bucket:
+    created: true
 iam_role:
-  null: created
+  conferencia4-role:
+    created: true
 iam_user:
-  null: created
+  conferencia22-user:
+    created: true
 instance:
-  null: created
+  null:
+    created: true

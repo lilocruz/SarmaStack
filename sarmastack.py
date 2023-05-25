@@ -47,57 +47,54 @@ def provision(args):
         instances = data['instances']
         for instance in instances:
             instance_id = instance.get('instance_id')
-            if not state_tracker.resource_exists('instance', instance_id):
-                try:
-                    create_manager.create_instance(instance)
-                    state_tracker.update_resource_state('instance', instance_id, 'created')
-                except Exception as e:
-                    print(f"Error creating instance {instance_id}: {str(e)}")
+            if state_tracker.get_resource_state('instance', instance_id) is None:
+                create_manager.create_instance(instance)
+                state_tracker.update_resource_state('instance', instance_id, {'created': True})
             else:
-                print(f"Instance {instance_id} already provisioned.")
+                print(f"Instance {instance_id} already exists. Skipping creation.")
+    else:
+        print("No instance specifications found in the YAML file.")
     
     if 'buckets' in data:
         buckets = data['buckets']
         for bucket in buckets:
             bucket_name = bucket.get('bucket_name')
-            if not state_tracker.resource_exists('bucket', bucket_name):
-                try:
-                    create_manager.create_bucket(bucket)
-                    state_tracker.update_resource_state('bucket', bucket_name, 'created')
-                except Exception as e:
-                    print(f"Error creating bucket {bucket_name}: {str(e)}")
+            if state_tracker.get_resource_state('bucket', bucket_name) is None:
+                create_manager.create_bucket(bucket)
+                state_tracker.update_resource_state('bucket', bucket_name, {'created': True})
             else:
-                print(f"Bucket {bucket_name} already provisioned.")
+                print(f"Bucket {bucket_name} already exists. Skipping creation.")
+    else:
+        print("No bucket specifications found in the YAML file.")
     
-    resources = data.get('resources', [])
-    for resource in resources:
-        resource_type = resource.get('type')
-        resource_id = resource.get('resource_id')
-        if not state_tracker.resource_exists(resource_type, resource_id):
+    if 'resources' in data:
+        resources = data['resources']
+        for resource in resources:
+            resource_type = resource.get('type')
             if resource_type == 'iam_user':
-                try:
+                user_name = resource.get('user_name')
+                if state_tracker.get_resource_state('iam_user', user_name) is None:
                     create_manager.create_iam_user(resource)
-                    state_tracker.update_resource_state(resource_type, resource_id, 'created')
-                except Exception as e:
-                    print(f"Error creating IAM user {resource_id}: {str(e)}")
+                    state_tracker.update_resource_state('iam_user', user_name, {'created': True})
+                else:
+                    print(f"IAM user {user_name} already exists. Skipping creation.")
             elif resource_type == 'iam_role':
                 role_name = resource.get('role_name')
                 assume_role_policy = resource.get('assume_role_policy')
-                try:
+                if state_tracker.get_resource_state('iam_role', role_name) is None:
                     create_manager.create_iam_role(role_name, assume_role_policy)
-                    state_tracker.update_resource_state(resource_type, resource_id, 'created')
-                except Exception as e:
-                    print(f"Error creating IAM role {resource_id}: {str(e)}")
+                    state_tracker.update_resource_state('iam_role', role_name, {'created': True})
+                else:
+                    print(f"IAM role {role_name} already exists. Skipping creation.")
             elif resource_type == 'iam_policy':
-                try:
+                policy_name = resource.get('policy_name')
+                if state_tracker.get_resource_state('iam_policy', policy_name) is None:
                     create_manager.create_iam_policy(resource)
-                    state_tracker.update_resource_state(resource_type, resource_id, 'created')
-                except Exception as e:
-                    print(f"Error creating IAM policy {resource_id}: {str(e)}")
+                    state_tracker.update_resource_state('iam_policy', policy_name, {'created': True})
+                else:
+                    print(f"IAM policy {policy_name} already exists. Skipping creation.")
             else:
                 print(f"Unsupported resource type: {resource_type}")
-        else:
-            print(f"{resource_type} {resource_id} already provisioned.")
 
     state_tracker.save_state()
 
