@@ -69,36 +69,35 @@ def provision(args):
             else:
                 print(f"Bucket {bucket_name} already provisioned.")
     
-    if 'resources' in data:
-        resources = data['resources']
-        for resource in resources:
-            resource_type = resource.get('type')
-            resource_id = resource.get('resource_id')
-            if not state_tracker.resource_exists(resource_type, resource_id):
-                if resource_type == 'iam_user':
-                    try:
-                        create_manager.create_iam_user(resource)
-                        state_tracker.update_resource_state(resource_type, resource_id, 'created')
-                    except Exception as e:
-                        print(f"Error creating IAM user {resource_id}: {str(e)}")
-                elif resource_type == 'iam_role':
-                    role_name = resource.get('role_name')
-                    assume_role_policy = resource.get('assume_role_policy')
-                    try:
-                        create_manager.create_iam_role(role_name, assume_role_policy)
-                        state_tracker.update_resource_state(resource_type, resource_id, 'created')
-                    except Exception as e:
-                        print(f"Error creating IAM role {resource_id}: {str(e)}")
-                elif resource_type == 'iam_policy':
-                    try:
-                        create_manager.create_iam_policy(resource)
-                        state_tracker.update_resource_state(resource_type, resource_id, 'created')
-                    except Exception as e:
-                        print(f"Error creating IAM policy {resource_id}: {str(e)}")
-                else:
-                    print(f"Unsupported resource type: {resource_type}")
+    resources = data.get('resources', [])
+    for resource in resources:
+        resource_type = resource.get('type')
+        resource_id = resource.get('resource_id')
+        if not state_tracker.resource_exists(resource_type, resource_id):
+            if resource_type == 'iam_user':
+                try:
+                    create_manager.create_iam_user(resource)
+                    state_tracker.update_resource_state(resource_type, resource_id, 'created')
+                except Exception as e:
+                    print(f"Error creating IAM user {resource_id}: {str(e)}")
+            elif resource_type == 'iam_role':
+                role_name = resource.get('role_name')
+                assume_role_policy = resource.get('assume_role_policy')
+                try:
+                    create_manager.create_iam_role(role_name, assume_role_policy)
+                    state_tracker.update_resource_state(resource_type, resource_id, 'created')
+                except Exception as e:
+                    print(f"Error creating IAM role {resource_id}: {str(e)}")
+            elif resource_type == 'iam_policy':
+                try:
+                    create_manager.create_iam_policy(resource)
+                    state_tracker.update_resource_state(resource_type, resource_id, 'created')
+                except Exception as e:
+                    print(f"Error creating IAM policy {resource_id}: {str(e)}")
             else:
-                print(f"{resource_type} {resource_id} already provisioned.")
+                print(f"Unsupported resource type: {resource_type}")
+        else:
+            print(f"{resource_type} {resource_id} already provisioned.")
 
     state_tracker.save_state()
 
