@@ -1,4 +1,5 @@
 import boto3
+from tabulate import tabulate 
 
 class ListManager:
     def __init__(self):
@@ -10,13 +11,16 @@ class ListManager:
         try:
             response = self.s3_client.list_buckets()
             buckets = response['Buckets']
+            table_data = []
 
             if buckets:
-                print("List of buckets:")
                 for bucket in buckets:
                     bucket_name = bucket['Name']
                     creation_date = bucket['CreationDate']
-                    print(f"- {bucket_name} (Created on: {creation_date})")
+                    table_data.append([bucket_name, creation_date])
+                    
+                headers = ['Bucket Name', 'Creation Date']
+                print(tabulate(table_data, headers, tablefmt="fancy_grid"))
             else:
                 print("No buckets found.")
         except Exception as e:
@@ -26,12 +30,15 @@ class ListManager:
         try:
             response = self.iam_client.list_users()
             users = response['Users']
-
+            table_data = []
+            
             if users:
-                print("List of IAM Users:")
                 for user in users:
                     user_name = user['UserName']
-                    print(user_name)
+                    table_data.append([user_name])
+                
+                headers = ['User Name']
+                print(tabulate(table_data, headers, tablefmt="fancy_grid"))
             else:
                 print("No IAM users found.")
         except Exception as e:
@@ -41,57 +48,59 @@ class ListManager:
         try:
             response = self.iam_client.list_roles()
             roles = response['Roles']
+            table_data = []
 
             if roles:
-                print("List of IAM Roles:")
                 for role in roles:
                     role_name = role['RoleName']
-                    print(role_name)
+                    table_data.append([role_name])
+                
+                headers = ['Role Name']
+                print(tabulate(table_data, headers, tablefmt='fancy_grid'))
             else:
                 print("No IAM roles found.")
         except Exception as e:
             print(f"Error occurred while listing IAM : {str(e)}")
     
     def list_instances(self):
-        try:
-            response = self.ec2_client.describe_instances()
-            reservations = response['Reservations']
-            instances = [instance for reservation in reservations for instance in reservation['Instances']]
+        response = self.ec2_client.describe_instances()
+        instances = response['Reservations']
+        table_data = []
 
-            if instances:
-                print("List of instances:")
-                for instance in instances:
+        if instances:
+            for reservation in instances:
+                for instance in reservation['Instances']:
                     instance_id = instance['InstanceId']
-                    instance_state = instance['State']['Name']
-
-                    # Retrieve instance tags
+                    instance_type = instance['InstanceType']
+                    state = instance['State']['Name']
+                    launch_time = instance['LaunchTime'].strftime('%Y-%m-%d %H:%M:%S')
                     tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [instance_id]}])
                     tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
                     instance_name = tags.get('Name', 'N/A')
-                    
-                    print(f"- Instance Name: {instance_name}, {instance_id} (Phase: {instance_state})")
-            else:
-                print("No instances found.")
-        except Exception as e:
-            print(f"Error occurred while listing instances: {str(e)}")
+                    table_data.append([instance_name, instance_id, instance_type, state, launch_time])
+                    headers = ['Instance Name', 'Instance ID', 'Instance Type', 'State', 'Launch Time']
+                    print(tabulate(table_data, headers, tablefmt="fancy_grid"))
+        else:
+            print("No instances found.")
         
     def list_vpcs(self):
         try:
             response = self.ec2_client.describe_vpcs()
             vpcs = response['Vpcs']
+            table_data = []
             
             if vpcs:
-                print("List of VPCs:")
                 for vpc in vpcs:
                     vpc_id = vpc['VpcId']
                     cidr_block = vpc['CidrBlock']
                     state = vpc['State']
-                    # Retrieve VPC tags
                     tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [vpc_id]}])
                     tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
                     vpc_name = tags.get('Name', 'N/A')                
-                    
-                    print(f"- VPC Name: {vpc_name if vpc_name else 'N/A'}, VPC ID: {vpc_id}, CIDR Block: {cidr_block}, State: {state}")
+                    table_data.append([vpc_name, vpc_id, cidr_block, state])
+                
+                headers = ['Name', 'ID', 'Cidr Block', 'State']
+                print(tabulate(table_data, headers, tablefmt='fancy_grid'))
             else:
                 print("No VPCs found.")
         except Exception as e:
@@ -101,9 +110,9 @@ class ListManager:
         try:
             response = self.ec2_client.describe_subnets()
             subnets = response['Subnets']
+            table_data = []
             
             if subnets:
-                print("List of Subnets:")
                 for subnet in subnets:
                     subnet_id = subnet['SubnetId']
                     vpc_id = subnet['VpcId']
@@ -113,7 +122,10 @@ class ListManager:
                     tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [subnet_id]}])
                     tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
                     subnet_name = tags.get('Name', 'N/A')
-                    print(f"- Subnet Name: {subnet_name}, Subnet ID: {subnet_id}, VPC ID: {vpc_id}, CIDR Block: {cidr_block}, State: {state}, Availability Zone: {availability_zone}")
+                    table_data.append([subnet_name, subnet_id, vpc_id, cidr_block, availability_zone, state])
+                
+                headers = ['Name', 'ID', 'VPC ID', 'Cidr Block', 'Availability Zone', 'State']
+                print(tabulate(table_data, headers, tablefmt='fancy_grid'))
             else:
                 print("No Subnets found.")
         except Exception as e:
@@ -123,9 +135,9 @@ class ListManager:
         try:
             response = self.ec2_client.describe_route_tables()
             route_tables = response['RouteTables']
-
+            table_data = []
+            
             if route_tables:
-                print("List of Route Tables:")
                 for route_table in route_tables:
                     route_table_id = route_table['RouteTableId']
                     vpc_id = route_table['VpcId']
@@ -133,39 +145,45 @@ class ListManager:
                     associations = route_table['Associations']
                     tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [route_table_id]}])
                     tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
-                    route_tables_name = tags.get('Name', 'N/A')
-                    print(f"- Route Table Name: {route_tables_name}, Route Table ID: {route_table_id}, VPC ID: {vpc_id}")
-                    print("  Routes:")
+                    route_table_name = tags.get('Name', 'N/A')
+                    
+                    table_data.append([route_table_name, route_table_id, vpc_id])
+                    
                     for route in routes:
                         destination_cidr_block = route.get('DestinationCidrBlock')
                         gateway_id = route.get('GatewayId')
                         if destination_cidr_block and gateway_id:
-                            print(f"    Destination: {destination_cidr_block}, Gateway ID: {gateway_id}")
-                    print("  Associations:")
-                    for association in associations:
-                        subnet_id = association.get('SubnetId')
-                        main = association.get('Main')
-                        if subnet_id:
-                            print(f"    Subnet ID: {subnet_id}, Main: {main}")
+                            table_data.append(["", destination_cidr_block, gateway_id])
+                            
+                            for association in associations:
+                                subnet_id = association.get('SubnetId')
+                                main = association.get('Main')
+                                if subnet_id:
+                                    table_data.append(["", f"Subnet ID: {subnet_id}", f"Main: {main}"])
+
+                headers = ['Route Table Name', 'Route Table ID & Destination', 'VPC ID & Target']
+                print(tabulate(table_data, headers, tablefmt="fancy_grid"))
             else:
                 print("No Route Tables found.")
         except Exception as e:
             print(f"Error occurred while listing Route Tables: {str(e)}")
-
     
     def list_internet_gateways(self):
         try:
             response = self.ec2_client.describe_internet_gateways()
             internetgateways = response['InternetGateways']
+            table_data = []
 
             if internetgateways:
-                print("List Internet Gateways:")
                 for intertgateway in internetgateways:
                     internetgateway_id = intertgateway['InternetGatewayId']
                     tags_response = self.ec2_client.describe_tags(Filters=[{'Name': 'resource-id', 'Values': [internetgateway_id]}])
                     tags = {tag['Key']: tag['Value'] for tag in tags_response['Tags']}
                     internetgateway_name = tags.get('Name', 'N/A')
-                    print(f"- Internet Gateway Name: {internetgateway_name}, Internet Gateway ID: {internetgateway_id}")
+                    table_data.append([internetgateway_name, internetgateway_id])
+                
+                headers = ['Name', 'ID']
+                print(tabulate(table_data, headers, tablefmt='fancy_grid'))
             else:
                 print("No Internet Gateways Found.")
         except Exception as e:

@@ -1,17 +1,21 @@
 instances:
-  - instance_name: conferencia-maquina
+  - instance_name: conferencia4-maquina
+    instance_type: t2.micro
+    image_id: ami-053b0d53c279acc90
+
+  - instance_name: ambarmivida2-maquina
     instance_type: t2.micro
     image_id: ami-053b0d53c279acc90
 
 buckets:
-  - bucket_name: conferencia-bucket
+  - bucket_name: conferencia4-bucket
     region: us-east-1
 
 resources:
   - type: iam_user
-    user_name: conferencia-user
+    user_name: conferencia4-user
   - type: iam_role
-    role_name: conferencia-role
+    role_name: conferencia4-role
     assume_role_policy:
       Version: "2012-10-17"
       Statement:
