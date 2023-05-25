@@ -1,7 +1,8 @@
 import boto3
 import json
 import yaml
-import botocore.exceptions
+import botocore
+from botocore.exceptions import ClientError
 
 class CreateManager:
     def __init__(self):
@@ -72,11 +73,16 @@ class CreateManager:
         else:
             print("Please provide both 'bucket_name' and 'region' arguments.")
 
-    def create_iam_user(self, args):
-        response = self.iam_client.create_user(
-            UserName=args['user_name']
-        )
-        print(f"Created IAM user: {args['user_name']}")
+    def create_iam_user(self, user_data):
+        user_name = user_data.get('user_name')
+        try:
+            self.iam_client.create_user(UserName=user_name)
+            print(f"Created IAM user: {user_name}")
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'EntityAlreadyExists':
+                print(f"IAM user {user_name} already exists.")
+            else:
+                print(f"Error creating IAM user {user_name}: {str(e)}")
 
     def create_iam_role(self, role_name, assume_role_policy):
         try:

@@ -12,6 +12,7 @@ from delete import DeleteManager
 from create import CreateManager
 from stop import StopManager
 from network import NetworkManager
+from state import StateTracker
 
 manager = ListManager()
 delete_manager = DeleteManager()
@@ -40,34 +41,67 @@ def provision(args):
     with open(args['file'], 'r') as f:
         data = yaml.safe_load(f)
 
+    state_tracker = StateTracker()
+
     if 'instances' in data:
         instances = data['instances']
         for instance in instances:
-            create_manager.create_instance(instance)
-    else:
-        print("No instance specifications found in the YAML file.")
+            instance_id = instance.get('instance_id')
+            if not state_tracker.resource_exists('instance', instance_id):
+                try:
+                    create_manager.create_instance(instance)
+                    state_tracker.update_resource_state('instance', instance_id, 'created')
+                except Exception as e:
+                    print(f"Error creating instance {instance_id}: {str(e)}")
+            else:
+                print(f"Instance {instance_id} already provisioned.")
     
     if 'buckets' in data:
         buckets = data['buckets']
         for bucket in buckets:
-            create_manager.create_bucket(bucket)
-    else:
-        print("No bucket specifications found in the YAML file.")
+            bucket_name = bucket.get('bucket_name')
+            if not state_tracker.resource_exists('bucket', bucket_name):
+                try:
+                    create_manager.create_bucket(bucket)
+                    state_tracker.update_resource_state('bucket', bucket_name, 'created')
+                except Exception as e:
+                    print(f"Error creating bucket {bucket_name}: {str(e)}")
+            else:
+                print(f"Bucket {bucket_name} already provisioned.")
     
     if 'resources' in data:
         resources = data['resources']
         for resource in resources:
             resource_type = resource.get('type')
-            if resource_type == 'iam_user':
-                create_manager.create_iam_user(resource)
-            elif resource_type == 'iam_role':
-                role_name = resource.get('role_name')
-                assume_role_policy = resource.get('assume_role_policy')
-                create_manager.create_iam_role(role_name, assume_role_policy)
-            elif resource_type == 'iam_policy':
-                create_manager.create_iam_policy(resource)
+            resource_id = resource.get('resource_id')
+            if not state_tracker.resource_exists(resource_type, resource_id):
+                if resource_type == 'iam_user':
+                    try:
+                        create_manager.create_iam_user(resource)
+                        state_tracker.update_resource_state(resource_type, resource_id, 'created')
+                    except Exception as e:
+                        print(f"Error creating IAM user {resource_id}: {str(e)}")
+                elif resource_type == 'iam_role':
+                    role_name = resource.get('role_name')
+                    assume_role_policy = resource.get('assume_role_policy')
+                    try:
+                        create_manager.create_iam_role(role_name, assume_role_policy)
+                        state_tracker.update_resource_state(resource_type, resource_id, 'created')
+                    except Exception as e:
+                        print(f"Error creating IAM role {resource_id}: {str(e)}")
+                elif resource_type == 'iam_policy':
+                    try:
+                        create_manager.create_iam_policy(resource)
+                        state_tracker.update_resource_state(resource_type, resource_id, 'created')
+                    except Exception as e:
+                        print(f"Error creating IAM policy {resource_id}: {str(e)}")
+                else:
+                    print(f"Unsupported resource type: {resource_type}")
             else:
-                print(f"Unsupported resource type: {resource_type}")
+                print(f"{resource_type} {resource_id} already provisioned.")
+
+    state_tracker.save_state()
+
 
 def main():
     

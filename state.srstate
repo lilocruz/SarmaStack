@@ -1,0 +1,8 @@
+bucket:
+  conferencia4-bucket: created
+iam_role:
+  null: created
+iam_user:
+  null: created
+instance:
+  null: created
