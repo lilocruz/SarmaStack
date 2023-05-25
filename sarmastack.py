@@ -47,7 +47,8 @@ def provision(args):
         instances = data['instances']
         for instance in instances:
             instance_id = instance.get('instance_id')
-            if state_tracker.get_resource_state('instance', instance_id) is None:
+            resource_state = state_tracker.get_resource_state('instance', instance_id)
+            if not resource_state:
                 create_manager.create_instance(instance)
                 state_tracker.update_resource_state('instance', instance_id, {'created': True})
             else:
@@ -59,7 +60,8 @@ def provision(args):
         buckets = data['buckets']
         for bucket in buckets:
             bucket_name = bucket.get('bucket_name')
-            if state_tracker.get_resource_state('bucket', bucket_name) is None:
+            resource_state = state_tracker.get_resource_state('bucket', bucket_name)
+            if not resource_state:
                 create_manager.create_bucket(bucket)
                 state_tracker.update_resource_state('bucket', bucket_name, {'created': True})
             else:
@@ -73,7 +75,8 @@ def provision(args):
             resource_type = resource.get('type')
             if resource_type == 'iam_user':
                 user_name = resource.get('user_name')
-                if state_tracker.get_resource_state('iam_user', user_name) is None:
+                resource_state = state_tracker.get_resource_state('iam_user', user_name)
+                if not resource_state:
                     create_manager.create_iam_user(resource)
                     state_tracker.update_resource_state('iam_user', user_name, {'created': True})
                 else:
@@ -81,14 +84,16 @@ def provision(args):
             elif resource_type == 'iam_role':
                 role_name = resource.get('role_name')
                 assume_role_policy = resource.get('assume_role_policy')
-                if state_tracker.get_resource_state('iam_role', role_name) is None:
+                resource_state = state_tracker.get_resource_state('iam_role', role_name)
+                if not resource_state:
                     create_manager.create_iam_role(role_name, assume_role_policy)
                     state_tracker.update_resource_state('iam_role', role_name, {'created': True})
                 else:
                     print(f"IAM role {role_name} already exists. Skipping creation.")
             elif resource_type == 'iam_policy':
                 policy_name = resource.get('policy_name')
-                if state_tracker.get_resource_state('iam_policy', policy_name) is None:
+                resource_state = state_tracker.get_resource_state('iam_policy', policy_name)
+                if not resource_state:
                     create_manager.create_iam_policy(resource)
                     state_tracker.update_resource_state('iam_policy', policy_name, {'created': True})
                 else:
