@@ -19,6 +19,7 @@ delete_manager = DeleteManager()
 create_manager = CreateManager()
 stop_manager = StopManager()
 network_manager = NetworkManager()
+state_tracker = StateTracker()
 
 def suggest_ami(args):
     ec2_client = boto3.client('ec2')
@@ -47,36 +48,33 @@ def provision(args):
         instances = data['instances']
         for instance in instances:
             instance_id = instance.get('instance_id')
-            resource_state = state_tracker.get_resource_state('instance', instance_id)
-            if not resource_state:
+            if not state_tracker.resource_exists('instance', instance_id):
                 create_manager.create_instance(instance)
                 state_tracker.update_resource_state('instance', instance_id, {'created': True})
             else:
                 print(f"Instance {instance_id} already exists. Skipping creation.")
     else:
         print("No instance specifications found in the YAML file.")
-    
+
     if 'buckets' in data:
         buckets = data['buckets']
         for bucket in buckets:
             bucket_name = bucket.get('bucket_name')
-            resource_state = state_tracker.get_resource_state('bucket', bucket_name)
-            if not resource_state:
+            if not state_tracker.resource_exists('bucket', bucket_name):
                 create_manager.create_bucket(bucket)
                 state_tracker.update_resource_state('bucket', bucket_name, {'created': True})
             else:
                 print(f"Bucket {bucket_name} already exists. Skipping creation.")
     else:
         print("No bucket specifications found in the YAML file.")
-    
+
     if 'resources' in data:
         resources = data['resources']
         for resource in resources:
             resource_type = resource.get('type')
             if resource_type == 'iam_user':
                 user_name = resource.get('user_name')
-                resource_state = state_tracker.get_resource_state('iam_user', user_name)
-                if not resource_state:
+                if not state_tracker.resource_exists('iam_user', user_name):
                     create_manager.create_iam_user(resource)
                     state_tracker.update_resource_state('iam_user', user_name, {'created': True})
                 else:
@@ -84,16 +82,14 @@ def provision(args):
             elif resource_type == 'iam_role':
                 role_name = resource.get('role_name')
                 assume_role_policy = resource.get('assume_role_policy')
-                resource_state = state_tracker.get_resource_state('iam_role', role_name)
-                if not resource_state:
+                if not state_tracker.resource_exists('iam_role', role_name):
                     create_manager.create_iam_role(role_name, assume_role_policy)
                     state_tracker.update_resource_state('iam_role', role_name, {'created': True})
                 else:
                     print(f"IAM role {role_name} already exists. Skipping creation.")
             elif resource_type == 'iam_policy':
                 policy_name = resource.get('policy_name')
-                resource_state = state_tracker.get_resource_state('iam_policy', policy_name)
-                if not resource_state:
+                if not state_tracker.resource_exists('iam_policy', policy_name):
                     create_manager.create_iam_policy(resource)
                     state_tracker.update_resource_state('iam_policy', policy_name, {'created': True})
                 else:
@@ -102,7 +98,6 @@ def provision(args):
                 print(f"Unsupported resource type: {resource_type}")
 
     state_tracker.save_state()
-
 
 def main():
     

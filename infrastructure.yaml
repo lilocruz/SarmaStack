@@ -1,5 +1,5 @@
 instances:
-  - instance_name: conferencia44-maquina
+  - instance_name: conferencia50-maquina
     instance_type: t2.micro
     image_id: ami-053b0d53c279acc90
 
