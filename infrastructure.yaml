@@ -1,5 +1,5 @@
 instances:
-  - instance_name: conf4-maquina
+  - instance_name: conf20-maquina
     instance_type: t2.micro
     image_id: ami-053b0d53c279acc90
 
@@ -13,7 +13,7 @@ buckets:
 
 resources:
   - type: iam_user
-    user_name: conferencia22-user
+    user_name: conferencia24-user
   - type: iam_role
     role_name: conferencia4-role
     assume_role_policy:

@@ -47,26 +47,28 @@ def provision(args):
     if 'instances' in data:
         instances = data['instances']
         for instance in instances:
-            instance_id = instance.get('instance_id')
-            if not state_tracker.resource_exists('instance', instance_id):
-                create_manager.create_instance(instance)
-                state_tracker.update_resource_state('instance', instance_id, {'created': True})
+            instance_name = instance.get('instance_name')
+            if instance_name:
+                if not state_tracker.resource_exists('instance', instance_name):
+                    create_manager.create_instance(instance)
+                    state_tracker.update_resource_state('instance', instance_name, {'created': True})
+                else:
+                    print(f"Instance with name '{instance_name}' already exists. Skipping creation.")
             else:
-                print(f"Instance {instance_id} already exists. Skipping creation.")
-    else:
-        print("No instance specifications found in the YAML file.")
+                print("Instance name not provided. Skipping creation.")
 
     if 'buckets' in data:
         buckets = data['buckets']
         for bucket in buckets:
             bucket_name = bucket.get('bucket_name')
-            if not state_tracker.resource_exists('bucket', bucket_name):
-                create_manager.create_bucket(bucket)
-                state_tracker.update_resource_state('bucket', bucket_name, {'created': True})
+            if bucket_name:
+                if not state_tracker.resource_exists('bucket', bucket_name):
+                    create_manager.create_bucket(bucket)
+                    state_tracker.update_resource_state('bucket', bucket_name, {'created': True})
+                else:
+                    print(f"Bucket '{bucket_name}' already exists. Skipping creation.")
             else:
-                print(f"Bucket {bucket_name} already exists. Skipping creation.")
-    else:
-        print("No bucket specifications found in the YAML file.")
+                print("Bucket name not provided. Skipping creation.")
 
     if 'resources' in data:
         resources = data['resources']
@@ -74,26 +76,35 @@ def provision(args):
             resource_type = resource.get('type')
             if resource_type == 'iam_user':
                 user_name = resource.get('user_name')
-                if not state_tracker.resource_exists('iam_user', user_name):
-                    create_manager.create_iam_user(resource)
-                    state_tracker.update_resource_state('iam_user', user_name, {'created': True})
+                if user_name:
+                    if not state_tracker.resource_exists('iam_user', user_name):
+                        create_manager.create_iam_user(resource)
+                        state_tracker.update_resource_state('iam_user', user_name, {'created': True})
+                    else:
+                        print(f"IAM User '{user_name}' already exists. Skipping creation.")
                 else:
-                    print(f"IAM user {user_name} already exists. Skipping creation.")
+                    print("IAM User name not provided. Skipping creation.")
             elif resource_type == 'iam_role':
                 role_name = resource.get('role_name')
-                assume_role_policy = resource.get('assume_role_policy')
-                if not state_tracker.resource_exists('iam_role', role_name):
-                    create_manager.create_iam_role(role_name, assume_role_policy)
-                    state_tracker.update_resource_state('iam_role', role_name, {'created': True})
+                if role_name:
+                    if not state_tracker.resource_exists('iam_role', role_name):
+                        assume_role_policy = resource.get('assume_role_policy')
+                        create_manager.create_iam_role(role_name, assume_role_policy)
+                        state_tracker.update_resource_state('iam_role', role_name, {'created': True})
+                    else:
+                        print(f"IAM Role '{role_name}' already exists. Skipping creation.")
                 else:
-                    print(f"IAM role {role_name} already exists. Skipping creation.")
+                    print("IAM Role name not provided. Skipping creation.")
             elif resource_type == 'iam_policy':
                 policy_name = resource.get('policy_name')
-                if not state_tracker.resource_exists('iam_policy', policy_name):
-                    create_manager.create_iam_policy(resource)
-                    state_tracker.update_resource_state('iam_policy', policy_name, {'created': True})
+                if policy_name:
+                    if not state_tracker.resource_exists('iam_policy', policy_name):
+                        create_manager.create_iam_policy(resource)
+                        state_tracker.update_resource_state('iam_policy', policy_name, {'created': True})
+                    else:
+                        print(f"IAM Policy '{policy_name}' already exists. Skipping creation.")
                 else:
-                    print(f"IAM policy {policy_name} already exists. Skipping creation.")
+                    print("IAM Policy name not provided. Skipping creation.")
             else:
                 print(f"Unsupported resource type: {resource_type}")
 

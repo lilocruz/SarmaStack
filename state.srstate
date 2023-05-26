@@ -7,6 +7,16 @@ iam_role:
 iam_user:
   conferencia22-user:
     created: true
+  conferencia24-user:
+    created: true
 instance:
   null:
+    created: true
+  conf6-maquina:
+    created: true
+  ambarmivida2-maquina:
+    created: true
+  conf8-maquina:
+    created: true
+  conf20-maquina:
     created: true
