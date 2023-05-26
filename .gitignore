@@ -164,3 +164,4 @@ cython_debug/
 
 # SarmaStack state files
 .srstate
+state.srstate
