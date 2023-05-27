@@ -1,5 +1,5 @@
 instances:
-  - instance_name: mcruz48-maquina
+  - instance_name: lia_liz-maquina
     instance_type: t2.micro
     image_id: ami-053b0d53c279acc90
 
