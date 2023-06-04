@@ -6,7 +6,6 @@ def provision(args):
     state_tracker = StateTracker()
     create_manager = CreateManager()
 
-    # Load the YAML file and check for new instances
     with open(args['file'], 'r') as f:
         data = yaml.safe_load(f)
 

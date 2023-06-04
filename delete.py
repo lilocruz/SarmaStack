@@ -13,7 +13,6 @@ class DeleteManager:
                 else:
                     print("No instance specifications found in the YAML file.")
         else:
-            # Delete the instances using the CLI arguments
             ec2_client = boto3.client('ec2')
             instance_ids = args.get('instance_ids')
             if instance_ids:

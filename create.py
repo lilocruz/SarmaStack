@@ -22,7 +22,7 @@ class CreateManager:
                     print("No instance specifications found in the YAML file.")
 
         else:
-            instance_name = args.get('instance_name') or 'default-name'  # Use a default name if not provided
+            instance_name = args.get('instance_name') or 'default-name'
             response = self.ec2_client.run_instances(
                 ImageId=args['image_id'],
                 InstanceType=args['instance_type'],

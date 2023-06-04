@@ -202,6 +202,5 @@ class ListManager:
             'us-west-1': 'us-west-1',
             'us-west-2': 'us-west-2',
             'eu-west-1': 'EU',
-            # Add more region mappings as needed
         }
         return region_mapping.get(region, region)
