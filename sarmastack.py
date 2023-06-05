@@ -1,7 +1,7 @@
 # SarmaStack is an Infrastructure as Code (IaC) tool designed to simplify the provisioning and management of AWS cloud infrastructure resources. 
 # With SarmaStack, you can define your AWS infrastructure configurations in a declarative manner and easily create and manage your resources.
 
-# Author: Michael Cruz Sanchez (Search Engineer @lucidworks)
+# Author: Michael Cruz Sanchez (superlinux.michael5@gmail.com)
 # Copyright: GPLv3
 
 import argparse
