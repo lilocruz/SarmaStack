@@ -1,4 +1,5 @@
 import yaml
+import multiprocessing
 from state import StateTracker
 from create import CreateManager
 
@@ -9,6 +10,8 @@ def provision(args):
     with open(args['file'], 'r') as f:
         data = yaml.safe_load(f)
 
+    processes = []
+
     if 'instances' in data:
         instances = data['instances']
         for instance in instances:
@@ -17,7 +20,9 @@ def provision(args):
                 if args.get('build'):
                     print(f"Would create instance: {instance_name}")
                 else:
-                    create_manager.create_instance(instance)
+                    process = multiprocessing.Process(target=create_manager.create_instance, args=(instance,))
+                    processes.append(process)
+                    process.start()
                     state_tracker.update_resource_state('instances', instance_name, {})
             else:
                 print(f"Instance '{instance_name}' already exists. Skipping creation.")
@@ -30,7 +35,9 @@ def provision(args):
                 if args.get('build'):
                     print(f"Would create bucket: {bucket_name}")
                 else:
-                    create_manager.create_bucket(bucket)
+                    process = multiprocessing.Process(target=create_manager.create_bucket, args=(bucket,))
+                    processes.append(process)
+                    process.start()
                     state_tracker.update_resource_state('buckets', bucket_name, {})
             else:
                 print(f"Bucket '{bucket_name}' already exists. Skipping creation.")
@@ -45,7 +52,9 @@ def provision(args):
                     if args.get('build'):
                         print(f"Would create IAM user: {resource_name}")
                     else:
-                        create_manager.create_iam_user(resource)
+                        process = multiprocessing.Process(target=create_manager.create_iam_user, args=(resource,))
+                        processes.append(process)
+                        process.start()
                         state_tracker.update_resource_state('iam_users', resource_name, {})
                 else:
                     print(f"IAM user '{resource_name}' already exists. Skipping creation.")
@@ -56,7 +65,9 @@ def provision(args):
                     else:
                         role_name = resource.get('role_name')
                         assume_role_policy = resource.get('assume_role_policy')
-                        create_manager.create_iam_role(role_name, assume_role_policy)
+                        process = multiprocessing.Process(target=create_manager.create_iam_role, args=(role_name, assume_role_policy))
+                        processes.append(process)
+                        process.start()
                         state_tracker.update_resource_state('iam_roles', resource_name, {})
                 else:
                     print(f"IAM role '{resource_name}' already exists. Skipping creation.")
@@ -65,11 +76,16 @@ def provision(args):
                     if args.get('build'):
                         print(f"Would create IAM policy: {resource_name}")
                     else:
-                        create_manager.create_iam_policy(resource)
+                        process = multiprocessing.Process(target=create_manager.create_iam_policy, args=(resource,))
+                        processes.append(process)
+                        process.start()
                         state_tracker.update_resource_state('iam_policies', resource_name, {})
                 else:
                     print(f"IAM policy '{resource_name}' already exists. Skipping creation.")
             else:
                 print(f"Unsupported resource type: {resource_type}")
+
+    for process in processes:
+        process.join()
 
     state_tracker.save_state()
