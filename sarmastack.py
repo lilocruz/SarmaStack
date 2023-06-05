@@ -6,6 +6,8 @@
 
 import argparse
 import boto3
+import os 
+import shutil
 from list import ListManager
 from delete import DeleteManager
 from create import CreateManager
@@ -20,6 +22,24 @@ create_manager = CreateManager()
 stop_manager = StopManager()
 network_manager = NetworkManager()
 state_tracker = StateTracker()
+
+
+# This will give SarmaStack the ability to start a new project working directory with configuration samples.
+def start(args):
+    if os.path.exists(args['directory']):
+        print(f"Working directory '{args['directory']}' already exists.")
+        return
+
+    os.makedirs(args['directory'])
+    print(f"Created working directory: '{args['directory']}'")
+
+    sample_config_files = ['infrastructure_sample.yaml']
+    for config_file in sample_config_files:
+        config_file_path = os.path.join('sample_configs', config_file)
+        shutil.copy(config_file_path, args['directory'])
+        print(f"Copied '{config_file}' to working directory.")
+    
+    print("Initialization complete.")
 
 def suggest_ami(args):
     ec2_client = boto3.client('ec2')
@@ -138,6 +158,9 @@ def main():
 
     provision_parser = subparsers.add_parser('provision', help='Provision infrastructure from YAML file')
     provision_parser.add_argument('-f', '--file', help='Path to the YAML file')
+
+    start_parser = subparsers.add_parser('start', help='Initialize working directory')
+    start_parser.add_argument('directory', help='Working directory')
     
     args = vars(parser.parse_args())
 
@@ -217,6 +240,10 @@ def main():
     elif args['command'] == 'suggest-ami':
         suggest_ami(args)
     
+    # Start command
+    elif args['command'] == 'start':
+        start(args)
+
     # Provision commands
     elif args['command'] == 'provision':
         provision(args)

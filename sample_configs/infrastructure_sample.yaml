@@ -1,0 +1,46 @@
+---
+instances:
+  - instance_id: my-instance-1
+    image_id: ami-12345678
+    instance_type: t2.micro
+    tags:
+      - key: Name
+        value: MyInstance1
+  - instance_id: my-instance-2
+    image_id: ami-87654321
+    instance_type: t2.micro
+    tags:
+      - key: Name
+        value: MyInstance2
+
+buckets:
+  - bucket_name: my-bucket-1
+    region: us-east-1
+  - bucket_name: my-bucket-2
+    region: us-west-2
+
+resources:
+  - type: iam_user
+    user_name: my-user
+  - type: iam_role
+    role_name: my-role
+    assume_role_policy:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: ec2.amazonaws.com
+          Action: sts:AssumeRole
+  - type: iam_policy
+    policy_name: my-policy
+    policy_document: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::my-bucket-1/*"
+          }
+        ]
+      }
